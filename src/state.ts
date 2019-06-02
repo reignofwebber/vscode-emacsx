@@ -142,10 +142,11 @@ import { TextDecoder } from "util";
              emacs.updateStatusBar("Quit");
              return;
          } else if (this._list.length ===0 && command.length === 1) {
-             if (command == 'z' && this._repeat) {
+             if (command === 'z' && this._repeat) {
                 this.clear();
                 return commandMap['C-x z'].command;
              }
+             return;
          }
          this._list.push(command);
          let name = this._list.join(' ');

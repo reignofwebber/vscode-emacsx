@@ -12,6 +12,7 @@ export function active() {
 class EditCommand extends Command {
 
     public run(): void {
+        emacs.mark = false;
         let editor = emacs.editor.ed;
         if (editor) {
             this.editRun(editor.document, emacs.editor.pos);
@@ -28,27 +29,29 @@ class EditCommand extends Command {
         if (editor) {
             let doc = editor.document;
             let offset = doc.offsetAt(pos) + text.length;
-            let newPos = doc.positionAt(offset);
-            emacs.yankRange = new Range(pos, newPos);
 
             editor.edit(editBuilder => {
                 editBuilder.insert(pos, text);
+            }).then(() => {
+                let endPos = doc.positionAt(offset);
+                emacs.yankRange = new Range(pos, endPos);
             });
         }
     }
 
-    public replace(range: Range, text: string) {
+    public replace(yankRange: Range, text: string) {
         let editor = emacs.editor.ed;
 
         if (editor) {
             let doc = editor.document;
-            let pos = range.start;
-            let offset = doc.offsetAt(pos) + text.length;
-            let newPos = doc.positionAt(offset);
-            emacs.yankRange = new Range(pos, newPos);
+            let offset = doc.offsetAt(yankRange.start) + text.length;
 
             editor.edit(editBuilder => {
-                editBuilder.replace(range, text);
+                editBuilder.replace(yankRange, text);
+            }).then(() => {
+                let newPos = doc.positionAt(offset + text.length);
+                emacs.yankRange = new Range(yankRange.start, newPos);
+                emacs.setCurrentPosition(newPos);
             });
         }
     }

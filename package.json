@@ -16,30 +16,123 @@
 	"contributes": {
 		"keybindings": [
 			{
-				"command": "emacsx.C-f",
+				"command": "C-f",
 				"key": "ctrl+f",
 				"when": "editorTextFocus"
 			},
 			{
-				"command": "emacsx.C-b",
+				"command": "C-b",
 				"key": "ctrl+b",
 				"when": "editorTextFocus"
 			},
 			{
-				"command": "emacsx.C-n",
+				"command": "C-n",
 				"key": "ctrl+n",
 				"when": "editorTextFocus"
 			},
 			{
-				"command": "emacsx.C-p",
+				"command": "C-p",
 				"key": "ctrl+p",
 				"when": "editorTextFocus"
 			},
 			{
-				"command": "emacsx.M-f",
+				"command": "M-f",
 				"key": "alt+f",
 				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-b",
+				"key": "alt+b",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-a",
+				"key": "ctrl+a",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-e",
+				"key": "ctrl+e",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-<",
+				"key": "shift+alt+,",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M->",
+				"key": "shift+alt+.",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-r",
+				"key": "alt+r",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-v",
+				"key": "ctrl+v",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-v",
+				"key": "alt+v",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-l",
+				"key": "ctrl+l",
+				"when": "editorTextFocus"
+			},
+
+			{
+				"command": "C-d",
+				"key": "ctrl+d",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-k",
+				"key": "ctrl+k",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-d",
+				"key": "alt+d",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-del",
+				"key": "alt+backspace",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-/",
+				"key": "ctrl+/",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-S-/",
+				"key": "ctrl+shift+/",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-g",
+				"key": "ctrl+g",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-x",
+				"key": "ctrl+x",
+				"when": "editorTextFocus"
+			},
+
+			{
+				"command": "C-spc",
+				"key": "ctrl+space",
+				"when": "editorTextFocus"
 			}
+
 		]
 	},
 	"scripts": {

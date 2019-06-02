@@ -175,6 +175,10 @@ class CursorMoveEl extends MotionCommand {
 class CursorMoveSf extends MotionCommand {
     name = "M-<";
     public motionRun(doc: TextDocument, pos: Position): Position {
+        runNativeCommand("revealLine", {
+            lineNumber: 0,
+            at: "top"
+        });
         return new Position(0, 0);
     }
 }
@@ -185,6 +189,10 @@ class CursorMoveEf extends MotionCommand {
     public motionRun(doc: TextDocument, pos: Position): Position {
         let endLineIndex = doc.lineCount - 1;
         let endChIndex = doc.lineAt(endLineIndex).text.length;
+        runNativeCommand("revealLine", {
+            lineNumber: endLineIndex,
+            at: "bottom"
+        });
         return new Position(endLineIndex, endChIndex);
     }
 }
@@ -215,29 +223,36 @@ class CursorMoveCycle extends MotionExtCommand {
 }
 
 @registerCommand
-class ScrollDown extends Command {
-    name = "C-v";
-    public run() {
-        runNativeCommand("editorScroll", {
-            to: "down",
-            by: "page",
-            value: 1,
-            revealCursor: true
+class ScrollDown extends MotionExtCommand {
+    name = "M-v";
+    public motionRun(editor: TextEditor): Position | undefined {
+        let range0 = editor.visibleRanges[0];
+        if (range0.start.line === 0) {
+            return;
+        }
+        runNativeCommand("revealLine", {
+            lineNumber: range0.start.line,
+            at: "bottom"
         });
+        return new Position(range0.start.line, 0);
     }
 }
 
 @registerCommand
-class ScrollUp extends Command {
-    name = "M-v";
-    public run() {
-        runNativeCommand("editorScroll", {
-            to: "up",
-            by: "page",
-            value: 1,
-            revealCursor: true
+class ScrollUp extends MotionExtCommand {
+    name = "C-v";
+    public motionRun(editor: TextEditor): Position | undefined {
+        let range0 = editor.visibleRanges[0];
+        if (range0.end.line >= editor.document.lineCount - 1) {
+            return;
+        }
+        runNativeCommand("revealLine", {
+            lineNumber: range0.end.line,
+            at: "top"
         });
+        return new Position(range0.end.line, 0);
     }
+
 }
 
 @registerCommand

@@ -107,6 +107,16 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "C-y",
+				"key": "ctrl+y",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-y",
+				"key": "alt+y",
+				"when": "editorTextFocus"
+			},
+			{
 				"command": "C-/",
 				"key": "ctrl+/",
 				"when": "editorTextFocus"

@@ -12,6 +12,7 @@ export function active() {
 
 
 class MotionCommand extends Command {
+    sequential = true;
     public run(): void {
         let doc = emacs.editor.doc;
         if (doc) {
@@ -29,6 +30,7 @@ class MotionCommand extends Command {
 }
 
 class MotionExtCommand extends Command {
+    sequential = true;
     public run(): void {
         let editor = emacs.editor.ed;
         if (editor) {
@@ -69,7 +71,7 @@ class CursorMoveF extends Command {
             to: "right",
             by: "character",
             value: 1,
-            select: emacs.isMark
+            select: emacs.mark
         });
     }
 }
@@ -82,7 +84,7 @@ class CursorMoveB extends Command {
             to: "left",
             by: "character",
             value: 1,
-            select: emacs.isMark
+            select: emacs.mark
         });
     }
 }
@@ -95,7 +97,7 @@ class CursorMoveN extends MotionExtCommand {
             to: "down",
             by: "character",
             value: 1,
-            select: emacs.isMark
+            select: emacs.mark
         });
         let range0 = editor.visibleRanges[0];
         let line = emacs.editor.pos.line;
@@ -120,7 +122,7 @@ class CursorMoveP extends MotionExtCommand {
             to: "up",
             by: "character",
             value: 1,
-            select: emacs.isMark
+            select: emacs.mark
         });
         let range0 = editor.visibleRanges[0];
         let line = emacs.editor.pos.line;

@@ -22,11 +22,47 @@ class EditCommand extends Command {
 
     }
 
-    public delete(range: Range, putInKillRing: boolean = true) {
+    public insert(pos: Position, text: string) {
+        let editor = emacs.editor.ed;
+
+        if (editor) {
+            let doc = editor.document;
+            let offset = doc.offsetAt(pos) + text.length;
+            let newPos = doc.positionAt(offset);
+            emacs.yankRange = new Range(pos, newPos);
+
+            editor.edit(editBuilder => {
+                editBuilder.insert(pos, text);
+            });
+        }
+    }
+
+    public replace(range: Range, text: string) {
+        let editor = emacs.editor.ed;
+
+        if (editor) {
+            let doc = editor.document;
+            let pos = range.start;
+            let offset = doc.offsetAt(pos) + text.length;
+            let newPos = doc.positionAt(offset);
+            emacs.yankRange = new Range(pos, newPos);
+
+            editor.edit(editBuilder => {
+                editBuilder.replace(range, text);
+            });
+        }
+    }
+
+    public delete(range: Range, putInKillRing: boolean, concat: boolean = false) {
         let editor = emacs.editor.ed;
 
         if (putInKillRing) {
-            emacs.killRing.push(emacs.editor.text(range));
+            let text = emacs.editor.text(range);
+            if (concat) {
+                emacs.killRing.extendsBack(text);
+            } else {
+                emacs.killRing.push(text);
+            }
         }
 
         if (editor) {
@@ -74,7 +110,35 @@ class KillLine extends EditCommand {
             range = new Range(pos.line, pos.character, pos.line, l);
         }
 
-        this.delete(range);
+        let name = emacs.commandRing.back();
+        if (name && name === this.name) {
+            this.delete(range, true, true);
+        } else {
+            this.delete(range, true);
+        }
+
+    }
+}
+
+@registerCommand
+class Yank extends EditCommand {
+    name = "C-y";
+    public editRun(doc: TextDocument, pos: Position): void {
+        let text = emacs.killRing.back();
+        if (text) {
+            this.insert(pos, text);
+        }
+    }
+}
+
+@registerCommand
+class YankPop extends EditCommand {
+    name = "M-y";
+    public editRun(doc: TextDocument, pos: Position): void {
+        let text = emacs.killRing.rolling();
+        if (text) {
+            this.replace(emacs.yankRange, text);
+        }
     }
 }
 
@@ -84,7 +148,7 @@ class KillWord extends EditCommand {
     public editRun(doc: TextDocument, pos: Position): void {
         let forWord = logic.getForWardWordPos(doc, pos);
         let range = new Range(pos, forWord);
-        this.delete(range);
+        this.delete(range, true);
     }
 }
 
@@ -94,6 +158,6 @@ class BackwardKillWord extends EditCommand {
     public editRun(doc: TextDocument, pos: Position): void {
         let backWord = logic.getBackWardWordPos(doc, pos);
         let range = new Range(backWord, pos);
-        this.delete(range);
+        this.delete(range, true);
     }
 }

@@ -49,11 +49,6 @@ import { TextDecoder } from "util";
          return '';
      }
 
-
-
-
-
-
      public setPos(anchor: vscode.Position, active: vscode.Position) {
         if (this._editor) {
             this._editor.selection = new vscode.Selection(anchor, active);
@@ -66,9 +61,9 @@ import { TextDecoder } from "util";
 
 
  class Ring {
-    private _data: string[];
-    private _curPos: number;
-    private _capability: number;
+    protected _data: string[];
+    protected _curPos: number;
+    protected _capability: number;
 
     constructor(ringSize: number) {
         this._data = [];
@@ -89,13 +84,22 @@ import { TextDecoder } from "util";
     }
 
     public rolling() {
-        let res = this._data[this._curPos];
+        if (this._data.length === 0) {
+            return null;
+        }
         if (this._curPos === 0) {
             this._curPos = this._data.length - 1;
         } else {
             --this._curPos;
         }
-        return res;
+        return this._data[this._curPos];
+    }
+
+    public back() {
+        if (this._data.length === 0) {
+            return null;
+        }
+        return this._data[this._data.length - 1];
     }
 
     public clear() {
@@ -105,10 +109,31 @@ import { TextDecoder } from "util";
 
  }
 
+ class KillRing extends Ring {
+    constructor(ringSize: number) {
+        super(ringSize);
+    }
+
+    public extendsBack(str: string) {
+        if (this._data.length === 0) {
+            this._data.push(str);
+            return;
+        }
+        let s = this._data.pop();
+        this._data.push(s + str);
+    }
+ }
+
+
+
  class CommandContainer {
      private _list: string[];
+     private _repeat: boolean;
+
+
      constructor() {
          this._list = [];
+         this._repeat = false;
      }
 
      public push(command: string): Command | undefined {
@@ -116,19 +141,32 @@ import { TextDecoder } from "util";
              this._list = [];
              emacs.updateStatusBar("Quit");
              return;
+         } else if (this._list.length ===0 && command.length === 1) {
+             if (command == 'z' && this._repeat) {
+                this.clear();
+                return commandMap['C-x z'].command;
+             }
          }
          this._list.push(command);
          let name = this._list.join(' ');
-         for (let n in commandMap) {
-             if (name === n) {
-                this._list = [];
-                let c = commandMap[name];
-                return c.command;
-             }
+         let c = commandMap[name];
+         if (c && !c.command.prefix) {
+            if (c.command.name === 'C-x z') {
+                this._repeat = true;
+            } else {
+                this._repeat = false;
+            }
+            this.clear();
+            return c.command;
          }
 
-         emacs.updateStatusBar(command + ' ');
+         emacs.updateStatusBar(name + '-');
          return;
+     }
+
+     public clear() {
+         this._list = [];
+         emacs.updateStatusBar('');
      }
  }
 
@@ -139,7 +177,8 @@ class Emacs {
     private _mark: boolean;
     private _anchor: vscode.Position;
     private _editor: Editor;
-    private _killRing: Ring;
+    private _killRing: KillRing;
+    private _yankRange: vscode.Range;  // for M-y
     // TODO
     private _markRing: Ring;
     // command history
@@ -156,15 +195,26 @@ class Emacs {
         this._mark = false;
         this._anchor = new vscode.Position(0, 0);
         this._editor = new Editor();
-        this._killRing = new Ring(20);
+        this._killRing = new KillRing(20);
+        this._yankRange = new vscode.Range(0, 0, 0, 0);
         this._markRing = new Ring(20);
         this._commandRing = new Ring(20);
         this._commandContainer = new CommandContainer();
         this._statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
     }
 
-    get isMark() {
+    get mark() {
         return this._mark;
+    }
+
+    set mark(m: boolean) {
+        if (m) {
+            this._mark = true;
+            this.updateStatusBar('Mark set');
+        } else {
+            this._mark = false;
+            this.updateStatusBar('Mark deactivated');
+        }
     }
 
     get editor() {
@@ -173,6 +223,18 @@ class Emacs {
 
     get killRing() {
         return this._killRing;
+    }
+
+    get yankRange() {
+        return this._yankRange;
+    }
+
+    set yankRange(range: vscode.Range) {
+        this._yankRange = range;
+    }
+
+    get commandRing() {
+        return this._commandRing;
     }
 
     get command() {
@@ -185,33 +247,37 @@ class Emacs {
         this._statusItem.show();
     }
 
-    // TODO
     public type(char: string): boolean {
+        let c = this.command.push(char);
+        if (c) {
+            c.run();
+            this.traceCommand(c);
+            return true;
+        }
+        this.mark = false;
         return false;
     }
 
-    // TODO
-    public traceCommand(command: string): void {
-
+    public traceCommand(command: Command): void {
+        if (command.trace) {
+            this._commandRing.push(command.name);
+        }
     }
 
     public toggleMark(): void {
         // in mark mode
         let editor = vscode.window.activeTextEditor;
         if (editor) {
-            if (this._mark === true && this._anchor === editor.selection.active) {
-                this._mark = false;
+            if (this._mark === true
+                && this._anchor.line === this._editor.pos.line
+                && this._anchor.character === this._editor.pos.character) {
+                this.mark = false;
             } else {
                 this._anchor = editor.selection.active;
                 editor.selection = new vscode.Selection(this._anchor,this._anchor);
-                this._mark = true;
+                this.mark = true;
             }
         }
-    }
-
-    // TODO
-    public emitCommand(): void {
-
     }
 
     public setCurrentPosition(pos: vscode.Position): void {

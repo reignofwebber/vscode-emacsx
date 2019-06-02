@@ -12,8 +12,12 @@ interface ICommand {
 export class Command {
     // name of Command
     name: string = "";
-    //
+    // command's name is subset of some other commands
     sequential: boolean = false;
+    // is prefix e.g. C-u C-x
+    prefix: boolean = false;
+    // trace
+    trace: boolean = true;
 
     public runWrap(): void {
         let c: this | Command | undefined = this;
@@ -21,8 +25,8 @@ export class Command {
             c = emacs.command.push(this.name);
         }
         if (c) {
-            emacs.traceCommand(this.name);
             c.run();
+            emacs.traceCommand(this);
         }
     }
 

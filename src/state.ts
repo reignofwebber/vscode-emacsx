@@ -35,6 +35,12 @@ import { TextDecoder } from "util";
          return;
      }
 
+     set sel(s: vscode.Selection | undefined) {
+        if (this._editor) {
+            this._editor.selection = s as vscode.Selection;
+        }
+     }
+
      get pos(): vscode.Position {
          if (this._editor) {
              return this._editor.selection.active;
@@ -60,8 +66,8 @@ import { TextDecoder } from "util";
 
 
 
- class Ring {
-    protected _data: string[];
+ class Ring<T> {
+    protected _data: T[];
     protected _curPos: number;
     protected _capability: number;
 
@@ -71,19 +77,20 @@ import { TextDecoder } from "util";
         this._capability = ringSize;
     }
 
-    public push(str: string) {
-        if (str === '') {
-            return;
-        }
+    public push(t: T) {
+        // FIXME
+        // if (t === '') {
+        //     return;
+        // }
 
         if (this._data.length >= this._capability) {
             this._data.shift();
         }
-        this._data.push(str);
+        this._data.push(t);
         this._curPos = this._data.length - 1;
     }
 
-    public rolling() {
+    public rolling() : T | null {
         if (this._data.length === 0) {
             return null;
         }
@@ -95,7 +102,7 @@ import { TextDecoder } from "util";
         return this._data[this._curPos];
     }
 
-    public back() {
+    public back(): T | null{
         if (this._data.length === 0) {
             return null;
         }
@@ -109,7 +116,7 @@ import { TextDecoder } from "util";
 
  }
 
- class KillRing extends Ring {
+ class KillRing extends Ring<string> {
     constructor(ringSize: number) {
         super(ringSize);
     }
@@ -139,8 +146,8 @@ import { TextDecoder } from "util";
      public push(command: string): Command | undefined {
          if (command === 'C-g') {
              this._list = [];
-             emacs.updateStatusBar("Quit");
-             return;
+             this._repeat = false;
+             return commandMap['C-g'].command;
          } else if (this._list.length ===0 && command.length === 1) {
              if (command === 'z' && this._repeat) {
                 this.clear();
@@ -181,9 +188,9 @@ class Emacs {
     private _killRing: KillRing;
     private _yankRange: vscode.Range;  // for M-y
     // TODO
-    private _markRing: Ring;
+    private _markRing: Ring<vscode.Position>;
     // command history
-    private _commandRing: Ring;
+    private _commandRing: Ring<string>;
 
     // command container
     private _commandContainer: CommandContainer;
@@ -208,13 +215,16 @@ class Emacs {
         return this._mark;
     }
 
-    set mark(m: boolean) {
+    public setMark(m: boolean, show: boolean = false) {
         if (m) {
             this._mark = true;
+            this._markRing.push(this._editor.pos);
             this.updateStatusBar('Mark set');
         } else {
             this._mark = false;
-            this.updateStatusBar('Mark deactivated');
+            if (show) {
+                this.updateStatusBar('Mark deactivated');
+            }
         }
     }
 
@@ -255,7 +265,8 @@ class Emacs {
             this.traceCommand(c);
             return true;
         }
-        this.mark = false;
+        this.setMark(false);
+        this.editor.sel = new vscode.Selection(this.editor.pos, this.editor.pos);
         return false;
     }
 
@@ -272,16 +283,19 @@ class Emacs {
             if (this._mark === true
                 && this._anchor.line === this._editor.pos.line
                 && this._anchor.character === this._editor.pos.character) {
-                this.mark = false;
+                this.setMark(false, true);
             } else {
                 this._anchor = editor.selection.active;
                 editor.selection = new vscode.Selection(this._anchor,this._anchor);
-                this.mark = true;
+                this.setMark(true);
             }
         }
     }
 
-    public setCurrentPosition(pos: vscode.Position): void {
+    public setCurrentPosition(pos?: vscode.Position): void {
+        if (!pos) {
+            pos = this.editor.pos;
+        }
         if (this._mark) {
             this._editor.setPos(this._anchor, pos);
         } else {

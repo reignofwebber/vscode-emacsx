@@ -13,6 +13,9 @@ export function active() {
 class KeyboardQuit extends Command {
     name = "C-g";
     sequential = true;
+    public run(): void {
+        emacs.updateStatusBar("Quit");
+    }
 }
 
 @registerCommand

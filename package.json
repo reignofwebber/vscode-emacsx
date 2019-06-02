@@ -107,6 +107,16 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "C-w",
+				"key": "ctrl+w",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-w",
+				"key": "alt+w",
+				"when": "editorTextFocus"
+			},
+			{
 				"command": "C-y",
 				"key": "ctrl+y",
 				"when": "editorTextFocus"
@@ -116,6 +126,17 @@
 				"key": "alt+y",
 				"when": "editorTextFocus"
 			},
+			{
+				"command": "C-j",
+				"key": "ctrl+j",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-o",
+				"key": "ctrl+o",
+				"when": "editorTextFocus"
+			},
+
 			{
 				"command": "C-/",
 				"key": "ctrl+/",

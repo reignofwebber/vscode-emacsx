@@ -19,7 +19,7 @@ class MotionCommand extends Command {
             let pos = emacs.editor.pos;
             let tar = this.motionRun(doc, pos);
             if (tar) {
-                emacs.setCurrentPosition(tar);
+                emacs.setCurrentPosition(tar, true);
             }
         }
     }
@@ -204,6 +204,12 @@ class CursorMoveCycle extends MotionExtCommand {
     public motionRun(editor: TextEditor): Position {
         let line = 0;
         let range0 = editor.visibleRanges[0];
+
+        let c = emacs.commandRing.back();
+        if (!(c && c === 'M-r')) {
+            this.curPos = "bottom";
+        }
+
         if (this.curPos === "bottom") {
             line = (range0.start.line + range0.end.line) / 2;
             this.curPos = "center";
@@ -260,10 +266,10 @@ class CenterWindow extends MotionCommand {
     name = "C-l";
     private curPos: "center" | "top" | "bottom" = "bottom";
     public motionRun(doc: TextDocument, pos: Position): Position | undefined {
-        runNativeCommand("revealLine", {
-            "lineNumber": pos.line,
-            "at": this.curPos
-        });
+        let c = emacs.commandRing.back();
+        if (!(c && c === 'C-l')) {
+            this.curPos = "bottom";
+        }
         if (this.curPos === "bottom") {
             this.curPos = "center";
         } else if (this.curPos === "center") {
@@ -271,6 +277,10 @@ class CenterWindow extends MotionCommand {
         } else {
             this.curPos = "bottom";
         }
+        runNativeCommand("revealLine", {
+            "lineNumber": pos.line,
+            "at": this.curPos
+        });
         return;
     }
 }

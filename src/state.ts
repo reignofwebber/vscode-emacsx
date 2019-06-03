@@ -61,6 +61,11 @@ import { TextDecoder } from "util";
         }
      }
 
+     public revealPos(pos: vscode.Position) {
+         if (this._editor) {
+             this._editor.revealRange(new vscode.Range(pos, pos));
+         }
+     }
 
  }
 
@@ -292,7 +297,7 @@ class Emacs {
         }
     }
 
-    public setCurrentPosition(pos?: vscode.Position): void {
+    public setCurrentPosition(pos?: vscode.Position, reveal: boolean = false): void {
         if (!pos) {
             pos = this.editor.pos;
         }
@@ -300,6 +305,10 @@ class Emacs {
             this._editor.setPos(this._anchor, pos);
         } else {
             this._editor.setPos(pos, pos);
+        }
+
+        if (reveal) {
+            this.editor.revealPos(pos);
         }
     }
 

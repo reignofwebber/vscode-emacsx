@@ -72,6 +72,8 @@ class EditCommand extends Command {
         if (editor) {
             editor.edit(editBuilder => {
                 editBuilder.delete(range);
+            }).then(() => {
+                emacs.setCurrentPosition(range.start);
             });
         }
     }

@@ -1,5 +1,7 @@
 {
+	"publisher": "reignofwebber",
 	"name": "emacs-ex",
+	"repository": "https://github.com/reignofwebber/emacsx.git",
 	"displayName": "emacs ex",
 	"description": "",
 	"version": "0.0.1",

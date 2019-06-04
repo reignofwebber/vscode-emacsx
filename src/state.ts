@@ -163,6 +163,7 @@ import { TextDecoder } from "util";
          this._list.push(command);
          let name = this._list.join(' ');
          let c = commandMap[name];
+         // do not return a prefix command
          if (c && !c.command.prefix) {
             if (c.command.name === 'C-x z') {
                 this._repeat = true;
@@ -171,6 +172,21 @@ import { TextDecoder } from "util";
             }
             this.clear();
             return c.command;
+         } else if(!c) {
+             // not found in command map, confirm if is some commands' prefix.
+             let isPrefix = false;
+             for (let k in commandMap) {
+                 if (k.indexOf(name) === 0) {
+                     isPrefix = true;
+                     break;
+                 }
+             }
+             if (!isPrefix) {
+                 this._list = [];
+                 this._repeat = false;
+                 emacs.updateStatusBar(`${name} is undefined`);
+                 return;
+             }
          }
 
          emacs.updateStatusBar(name + '-');

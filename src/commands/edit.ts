@@ -3,6 +3,7 @@ import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
 import { registerCommand, Command } from "./base";
 import * as logic from "./logichelper";
+import { start } from "repl";
 
 
 export function active() {
@@ -78,6 +79,16 @@ class EditCommand extends Command {
         }
     }
 
+    public deleteWithCallback(range: Range, callback: () => void) {
+        let editor = emacs.editor.ed;
+
+        if (editor) {
+            editor.edit(editBuilder => {
+                editBuilder.delete(range);
+            }).then(callback);
+        }
+    }
+
 
 }
 
@@ -146,7 +157,7 @@ class KillRingSave extends EditCommand {
                 emacs.killRing.push(text);
             }
         }
-        
+
     }
 }
 
@@ -215,10 +226,46 @@ class NewLineMayBeIndent extends EditCommand {
 
 @registerCommand
 class OpenLine extends EditCommand {
+    sequential = true;
     name = "C-o";
     public editRun(doc: TextDocument, pos: Position): void {
         this.insert(pos, '\n', () => {
             emacs.setCurrentPosition(pos);
         });
+    }
+}
+
+@registerCommand
+class DeleteBlankLines extends EditCommand {
+    name = "C-x C-o";
+    public editRun(doc: TextDocument, pos: Position): void {
+        let ct = doc.lineAt(pos.line).text;
+        let endLine = pos.line;
+        if (pos.line + 1 < doc.lineCount) {
+            endLine = pos.line + 1;
+            let curText = doc.lineAt(endLine).text;
+            while (endLine < doc.lineCount - 1 && /^\s*$/.exec(curText)) {
+                ++endLine;
+                curText = doc.lineAt(endLine).text;
+            }
+        }
+        // if current line is empty, delete empty line previous this line.
+        if (/^\s*$/.exec(ct)) {
+            let curLine = pos.line;
+            let curText = doc.lineAt(curLine).text;
+            while (curLine > 0 && /^\s*$/.exec(curText)) {
+                --curLine;
+                curText = doc.lineAt(curLine).text;
+            }
+            let startLine = curLine === 0 ? 0 : curLine + 1;
+            this.deleteWithCallback(new Range(startLine, 0, endLine - 1, 0), () => {
+                emacs.setCurrentPosition(new Position(startLine, 0));
+            });
+        } else {
+            this.deleteWithCallback(new Range(pos.line + 1, 0, endLine, 0), () => {
+                emacs.setCurrentPosition(pos);
+            });
+        }
+
     }
 }

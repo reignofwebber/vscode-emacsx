@@ -1,7 +1,7 @@
 import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
-import { registerCommand, Command } from "./base";
+import { registerGlobalCommand, Command } from "./base";
 import * as logic from "./logichelper";
 import { start } from "repl";
 
@@ -92,7 +92,7 @@ class EditCommand extends Command {
 
 }
 
-@registerCommand
+@registerGlobalCommand
 class DeleteChar extends EditCommand {
     name = "C-d";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -111,7 +111,7 @@ class DeleteChar extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class KillLine extends EditCommand {
     name = "C-k";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -137,7 +137,7 @@ class KillLine extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class KillRegion extends EditCommand {
     name = "C-w";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -147,7 +147,7 @@ class KillRegion extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class KillRingSave extends EditCommand {
     name = "M-w";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -161,7 +161,7 @@ class KillRingSave extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class Yank extends EditCommand {
     name = "C-y";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -176,7 +176,7 @@ class Yank extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class YankPop extends EditCommand {
     name = "M-y";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -194,7 +194,7 @@ class YankPop extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class KillWord extends EditCommand {
     name = "M-d";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -204,7 +204,7 @@ class KillWord extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class BackwardKillWord extends EditCommand {
     name = "M-del";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -214,7 +214,7 @@ class BackwardKillWord extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class NewLineMayBeIndent extends EditCommand {
     name = "C-j";
     public editRun(doc: TextDocument, pos: Position): void {
@@ -224,7 +224,7 @@ class NewLineMayBeIndent extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class OpenLine extends EditCommand {
     sequential = true;
     name = "C-o";
@@ -235,7 +235,7 @@ class OpenLine extends EditCommand {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class DeleteBlankLines extends EditCommand {
     name = "C-x C-o";
     public editRun(doc: TextDocument, pos: Position): void {

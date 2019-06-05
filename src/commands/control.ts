@@ -2,14 +2,14 @@ import {TextDocument, Position, TextEditor} from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
 import { wordSeparators } from "../configure";
-import { registerCommand, Command, commandMap } from "./base";
+import { registerGlobalCommand, Command, keyMap } from "./base";
 import * as logic from "./logichelper";
 
 export function active() {
 
 }
 
-@registerCommand
+@registerGlobalCommand
 class KeyboardQuit extends Command {
     name = "C-g";
     sequential = true;
@@ -18,21 +18,21 @@ class KeyboardQuit extends Command {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class CxPrefix extends Command {
     name = "C-x";
     sequential = true;
     prefix = true;
 }
 
-@registerCommand
+@registerGlobalCommand
 class Repeat extends Command {
     name = "C-x z";
     trace = false;
     public run(): void {
         let name = emacs.commandRing.back();
         if (name) {
-            let c = commandMap[name];
+            let c = keyMap[emacs.mode][name];
             if (c) {
                 c.command.run();
                 emacs.traceCommand(c.command);

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { commandMap, Command }from "./commands/base";
+import { keyMap, Mode, Command }from "./commands/base";
 import { TextDecoder } from "util";
 
 /**
@@ -152,17 +152,17 @@ import { TextDecoder } from "util";
          if (command === 'C-g') {
              this._list = [];
              this._repeat = false;
-             return commandMap['C-g'].command;
+             return keyMap[emacs.mode]['C-g'].command;
          } else if (this._list.length ===0 && command.length === 1) {
              if (command === 'z' && this._repeat) {
                 this.clear();
-                return commandMap['C-x z'].command;
+                return keyMap[emacs.mode]['C-x z'].command;
              }
              return;
          }
          this._list.push(command);
          let name = this._list.join(' ');
-         let c = commandMap[name];
+         let c = keyMap[emacs.mode][name];
          // do not return a prefix command
          if (c && !c.command.prefix) {
             if (c.command.name === 'C-x z') {
@@ -175,7 +175,7 @@ import { TextDecoder } from "util";
          } else if(!c) {
              // not found in command map, confirm if is some commands' prefix.
              let isPrefix = false;
-             for (let k in commandMap) {
+             for (let k in keyMap[emacs.mode]) {
                  if (k.indexOf(name) === 0) {
                      isPrefix = true;
                      break;
@@ -203,6 +203,7 @@ import { TextDecoder } from "util";
  * emacs state
  */
 class Emacs {
+    private _mode: Mode;
     private _mark: boolean;
     private _anchor: vscode.Position;
     private _editor: Editor;
@@ -221,6 +222,7 @@ class Emacs {
 
 
     constructor() {
+        this._mode = Mode.Global;
         this._mark = false;
         this._anchor = new vscode.Position(0, 0);
         this._editor = new Editor();
@@ -230,6 +232,14 @@ class Emacs {
         this._commandRing = new Ring(20);
         this._commandContainer = new CommandContainer();
         this._statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
+    }
+
+    set mode(m: Mode) {
+        this._mode = m;
+    }
+
+    get mode() {
+        return this._mode;
     }
 
     get mark() {

@@ -2,7 +2,7 @@ import {TextDocument, Position, TextEditor} from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
 import { wordSeparators } from "../configure";
-import { registerCommand, Command } from "./base";
+import { registerGlobalCommand, Command } from "./base";
 import * as logic from "./logichelper";
 
 
@@ -46,7 +46,7 @@ class MotionExtCommand extends Command {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class Undo extends Command {
     name = "C-/";
     public run(): void {
@@ -54,7 +54,7 @@ class Undo extends Command {
     }
 }
 
-@registerCommand
+@registerGlobalCommand
 class Redo extends Command {
     name = "C-S-/";
     public run(): void {
@@ -63,8 +63,8 @@ class Redo extends Command {
 }
 
 
-@registerCommand
-class CursorMoveF extends Command {
+@registerGlobalCommand
+class ForwardChar extends Command {
     name = "C-f";
     public run(): void {
         runNativeCommand("cursorMove", {
@@ -76,8 +76,8 @@ class CursorMoveF extends Command {
     }
 }
 
-@registerCommand
-class CursorMoveB extends Command {
+@registerGlobalCommand
+class BackwardChar extends Command {
     name = "C-b";
     public run(): void {
         runNativeCommand("cursorMove", {
@@ -89,8 +89,8 @@ class CursorMoveB extends Command {
     }
 }
 
-@registerCommand
-class CursorMoveN extends MotionExtCommand {
+@registerGlobalCommand
+class NextLine extends MotionExtCommand {
     name = "C-n";
     public motionRun(editor: TextEditor): undefined {
         runNativeCommand("cursorMove", {
@@ -114,8 +114,8 @@ class CursorMoveN extends MotionExtCommand {
     }
 }
 
-@registerCommand
-class CursorMoveP extends MotionExtCommand {
+@registerGlobalCommand
+class PreviousLine extends MotionExtCommand {
     name = "C-p";
     public motionRun(editor: TextEditor): undefined {
         runNativeCommand("cursorMove", {
@@ -138,32 +138,32 @@ class CursorMoveP extends MotionExtCommand {
     }
 }
 
-@registerCommand
-class CursorMoveFw extends MotionCommand {
+@registerGlobalCommand
+class ForwardWord extends MotionCommand {
     name = "M-f";
     public motionRun(doc: TextDocument, pos: Position): Position {
         return logic.getForWardWordPos(doc, pos);
     }
 }
 
-@registerCommand
-class CursorMoveBw extends MotionCommand {
+@registerGlobalCommand
+class BackwardWord extends MotionCommand {
     name = "M-b";
     public motionRun(doc: TextDocument, pos: Position): Position {
         return logic.getBackWardWordPos(doc, pos);
     }
 }
 
-@registerCommand
-class CursorMoveSl extends MotionCommand {
+@registerGlobalCommand
+class MoveBeginningOfLine extends MotionCommand {
     name = "C-a";
     public motionRun(doc: TextDocument, pos: Position): Position {
         return new Position(pos.line, 0);
     }
 }
 
-@registerCommand
-class CursorMoveEl extends MotionCommand {
+@registerGlobalCommand
+class MoveEndOfLine extends MotionCommand {
     name = "C-e";
     public motionRun(doc: TextDocument, pos: Position): Position {
         let endChIndex = doc.lineAt(pos.line).text.length;
@@ -171,8 +171,8 @@ class CursorMoveEl extends MotionCommand {
     }
 }
 
-@registerCommand
-class CursorMoveSf extends MotionCommand {
+@registerGlobalCommand
+class BeginningOfBuffer extends MotionCommand {
     name = "M-<";
     public motionRun(doc: TextDocument, pos: Position): Position {
         runNativeCommand("revealLine", {
@@ -183,8 +183,8 @@ class CursorMoveSf extends MotionCommand {
     }
 }
 
-@registerCommand
-class CursorMoveEf extends MotionCommand {
+@registerGlobalCommand
+class EndOfBuffer extends MotionCommand {
     name = "M->";
     public motionRun(doc: TextDocument, pos: Position): Position {
         let endLineIndex = doc.lineCount - 1;
@@ -197,8 +197,8 @@ class CursorMoveEf extends MotionCommand {
     }
 }
 // FIXME
-@registerCommand
-class CursorMoveCycle extends MotionExtCommand {
+@registerGlobalCommand
+class MoveToWindowLineTopBottom extends MotionExtCommand {
     name = "M-r";
     private curPos: "center" | "top" | "bottom" = "bottom";
     public motionRun(editor: TextEditor): Position {
@@ -228,8 +228,8 @@ class CursorMoveCycle extends MotionExtCommand {
     }
 }
 
-@registerCommand
-class ScrollDown extends MotionExtCommand {
+@registerGlobalCommand
+class ScrollDownCommand extends MotionExtCommand {
     name = "M-v";
     public motionRun(editor: TextEditor): Position | undefined {
         let range0 = editor.visibleRanges[0];
@@ -244,8 +244,8 @@ class ScrollDown extends MotionExtCommand {
     }
 }
 
-@registerCommand
-class ScrollUp extends MotionExtCommand {
+@registerGlobalCommand
+class ScrollUpCommand extends MotionExtCommand {
     name = "C-v";
     public motionRun(editor: TextEditor): Position | undefined {
         let range0 = editor.visibleRanges[0];
@@ -261,8 +261,8 @@ class ScrollUp extends MotionExtCommand {
 
 }
 
-@registerCommand
-class CenterWindow extends MotionCommand {
+@registerGlobalCommand
+class RecenterTopBottom extends MotionCommand {
     name = "C-l";
     private curPos: "center" | "top" | "bottom" = "bottom";
     public motionRun(doc: TextDocument, pos: Position): Position | undefined {

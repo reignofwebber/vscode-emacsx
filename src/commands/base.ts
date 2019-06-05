@@ -1,8 +1,19 @@
 import { emacs } from "../state";
 
-export let commandMap: {
+
+export enum Mode {
+    Fundemental = 'Fundemental',
+    Global = 'Global'
+}
+
+type KeyBinding = {
     [key: string]: ICommand
+};
+
+export let keyMap: {
+    [key: string]: KeyBinding
 } = {};
+
 
 interface ICommand {
     isComposed: boolean;
@@ -35,10 +46,10 @@ export class Command {
     }
 }
 
-export function registerCommand(command: typeof Command) {
+export function registerGlobalCommand(command: typeof Command) {
     let c = new command();
     let isComposed = c.name.split(' ').length !== 1;
-    commandMap[c.name] = {
+    keyMap['global'][c.name] = {
         isComposed: isComposed,
         command: c
     };

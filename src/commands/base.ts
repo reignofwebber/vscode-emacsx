@@ -1,4 +1,5 @@
 import { emacs } from "../state";
+import { useExtendCommand } from "../configure";
 
 
 export enum Mode {
@@ -12,7 +13,9 @@ type KeyBinding = {
 
 export let keyMap: {
     [key: string]: KeyBinding
-} = {};
+} = {
+    [Mode.Global] : {}
+};
 
 
 interface ICommand {
@@ -49,7 +52,7 @@ export class Command {
 export function registerGlobalCommand(command: typeof Command) {
     let c = new command();
     let isComposed = c.name.split(' ').length !== 1;
-    keyMap['global'][c.name] = {
+    keyMap[Mode.Global][c.name] = {
         isComposed: isComposed,
         command: c
     };
@@ -61,9 +64,15 @@ import * as motions from "./motions";
 import * as mark from "./mark";
 import * as edit from "./edit";
 import * as control from "./control";
+import * as file from "./file";
+import * as extend from "./extend";
 
 
 motions.active();
 mark.active();
 edit.active();
 control.active();
+file.active();
+if (useExtendCommand) {
+    extend.active();
+}

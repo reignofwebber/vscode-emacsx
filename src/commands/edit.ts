@@ -171,6 +171,7 @@ class Yank extends EditCommand {
             this.insert(pos, text, () => {
                 let endPos = doc.positionAt(offset);
                 emacs.yankRange = new Range(pos, endPos);
+                emacs.setCurrentPosition(endPos);
             });
         }
     }

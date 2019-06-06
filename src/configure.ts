@@ -9,3 +9,7 @@ function getWordSeparators(): string {
     s += ' \t';
     return s;
 }
+
+let selfConfig = vscode.workspace.getConfiguration('emacsx');
+
+export let useExtendCommand: boolean = selfConfig.useExtendCommand;

@@ -159,6 +159,22 @@
 				"key": "ctrl+x",
 				"when": "editorTextFocus"
 			},
+			{
+				"command": "C-s",
+				"key": "ctrl+s",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-[",
+				"key": "alt+[",
+				"when": ""
+			},
+			{
+				"command": "M-]",
+				"key": "alt+]",
+				"when": ""
+			},
+
 
 			{
 				"command": "C-spc",
@@ -166,6 +182,23 @@
 				"when": "editorTextFocus"
 			}
 
+
+
+
+
+		],
+		"configuration":[
+			{
+				"type": "object",
+				"title": "emacsx configuration",
+				"properties": {
+					"emacsx.useExtendCommand": {
+						"type": "boolean",
+						"default": true,
+						"description": "extend commands not come from emacs"
+					}
+				}
+			}
 		]
 	},
 	"scripts": {

@@ -17,32 +17,24 @@ export let keyMap: {
     [Mode.Global] : {}
 };
 
+export enum CommandState {
+    UnDefined,
+    InCompete,
+    Well
+};
 
-interface ICommand {
-    isComposed: boolean;
+export interface ICommand {
+    state: CommandState;
     command: Command;
 }
 
 export class Command {
     // name of Command
     name: string = "";
-    // command's name is subset of some other commands
-    sequential: boolean = false;
     // is prefix e.g. C-u C-x
     prefix: boolean = false;
     // trace
     trace: boolean = true;
-
-    public runWrap(): void {
-        let c: this | Command | undefined = this;
-        if (this.sequential) {
-            c = emacs.command.push(this.name);
-        }
-        if (c) {
-            c.run();
-            emacs.traceCommand(this);
-        }
-    }
 
     public run(): void {
 
@@ -51,9 +43,8 @@ export class Command {
 
 export function registerGlobalCommand(command: typeof Command) {
     let c = new command();
-    let isComposed = c.name.split(' ').length !== 1;
     keyMap[Mode.Global][c.name] = {
-        isComposed: isComposed,
+        state: CommandState.Well,
         command: c
     };
 }

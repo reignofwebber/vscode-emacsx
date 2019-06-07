@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { emacs } from "./state";
+import { CommandState } from "./commands/base";
 
 
 export function runNativeCommand(command: string, ...rest: any[]) {
@@ -8,8 +9,8 @@ export function runNativeCommand(command: string, ...rest: any[]) {
 
 export function dispatchCommand(command: string) {
     let c = emacs.command.push(command);
-    if (c) {
-        c.run();
-        emacs.traceCommand(c);
+    if (c.state === CommandState.Well) {
+        c.command.run();
+        emacs.traceCommand(c.command);
     }
 }

@@ -2,7 +2,7 @@ import {TextDocument, Position, TextEditor} from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
 import { wordSeparators } from "../configure";
-import { registerGlobalCommand, Command, keyMap } from "./base";
+import { registerGlobalCommand, Command, keyMap, CommandState } from "./base";
 import * as logic from "./logichelper";
 
 export function active() {
@@ -12,7 +12,6 @@ export function active() {
 @registerGlobalCommand
 class KeyboardQuit extends Command {
     name = "C-g";
-    sequential = true;
     public run(): void {
         emacs.updateStatusBar("Quit");
     }
@@ -21,7 +20,6 @@ class KeyboardQuit extends Command {
 @registerGlobalCommand
 class CxPrefix extends Command {
     name = "C-x";
-    sequential = true;
     prefix = true;
 }
 
@@ -33,7 +31,7 @@ class Repeat extends Command {
         let name = emacs.commandRing.back();
         if (name) {
             let c = keyMap[emacs.mode][name];
-            if (c) {
+            if (c && c.command) {
                 c.command.run();
                 emacs.traceCommand(c.command);
             }

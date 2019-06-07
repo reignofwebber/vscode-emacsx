@@ -12,7 +12,6 @@ export function active() {
 
 
 class MotionCommand extends Command {
-    sequential = true;
     public run(): void {
         let doc = emacs.editor.doc;
         if (doc) {
@@ -30,7 +29,6 @@ class MotionCommand extends Command {
 }
 
 class MotionExtCommand extends Command {
-    sequential = true;
     public run(): void {
         let editor = emacs.editor.ed;
         if (editor) {

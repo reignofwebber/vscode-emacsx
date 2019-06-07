@@ -1,9 +1,9 @@
 import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
-import { emacs } from "../state";
+import { emacs, RectangleText } from "../state";
 import { runNativeCommand } from "../runner";
 import { registerGlobalCommand, Command } from "./base";
 import * as logic from "./logichelper";
-import { start } from "repl";
+
 
 
 export function active() {
@@ -90,6 +90,16 @@ class EditCommand extends Command {
     }
 
 
+    public async deleteRanges(ranges: Range[]) {
+        let editor = emacs.editor.ed;
+        if (editor) {
+            for (let range of ranges) {
+                await editor.edit(editBuilder => {
+                    editBuilder.delete(range);
+                });
+            }
+        }
+    }
 }
 
 @registerGlobalCommand
@@ -227,7 +237,6 @@ class NewLineMayBeIndent extends EditCommand {
 
 @registerGlobalCommand
 class OpenLine extends EditCommand {
-    sequential = true;
     name = "C-o";
     public editRun(doc: TextDocument, pos: Position): void {
         this.insert(pos, '\n', () => {
@@ -268,5 +277,42 @@ class DeleteBlankLines extends EditCommand {
             });
         }
 
+    }
+}
+
+
+@registerGlobalCommand
+class KillRectangle extends EditCommand {
+    name = "C-x r k";
+    public editRun(doc: TextDocument, pos: Position) {
+        let corner = emacs.markRing.back();
+        if (!corner) {
+            return;
+        }
+        let leftTop: Position = new Position(
+            pos.line < corner.line ? pos.line : corner.line,
+            pos.character < corner.character ? pos.character : corner.character);
+        let rightBottom: Position = new Position(
+            pos.line > corner.line ? pos.line : corner.line,
+            pos.character > corner.character ? pos.character : corner.character
+        );
+
+        // a rectangle
+        let rs: Range[] = [];
+        let s: string = '';
+        for (let l = leftTop.line; l <= rightBottom.line; ++l) {
+            let c = leftTop.character !== rightBottom.character ? leftTop.character : doc.lineAt(l).text.length;
+            let startPos = new Position(l, leftTop.character);
+            let endPos = new Position(l, c);
+            let r = new Range(startPos, endPos);
+            s += doc.getText(r);
+            if (l !== rightBottom.line) {
+                s += '\n';
+            }
+            rs.push(r);
+        }
+        emacs.rectangleRing.push(new RectangleText(s));
+        
+        this.deleteRanges(rs);
     }
 }

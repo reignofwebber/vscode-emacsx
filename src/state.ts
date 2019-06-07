@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { keyMap, Mode, Command }from "./commands/base";
+import { keyMap, Mode, Command, ICommand, CommandState }from "./commands/base";
 import { TextDecoder } from "util";
 
 /**
@@ -148,17 +148,21 @@ import { TextDecoder } from "util";
          this._repeat = false;
      }
 
-     public push(command: string): Command | undefined {
+     public push(command: string): ICommand {
          if (command === 'C-g') {
              this._list = [];
              this._repeat = false;
-             return keyMap[emacs.mode]['C-g'].command;
-         } else if (this._list.length ===0 && command.length === 1) {
-             if (command === 'z' && this._repeat) {
-                this.clear();
-                return keyMap[emacs.mode]['C-x z'].command;
-             }
-             return;
+             return {
+                state: CommandState.Well,
+                command: keyMap[emacs.mode]['C-g'].command
+             };
+         // command buffer is empty and command === z and last command is C-x z
+         } else if (this._list.length ===0 && command === 'z' && this._repeat) {
+            this.clear();
+            return {
+                state: CommandState.Well,
+                command: keyMap[emacs.mode]['C-x z'].command
+            };
          }
          this._list.push(command);
          let name = this._list.join(' ');
@@ -171,7 +175,10 @@ import { TextDecoder } from "util";
                 this._repeat = false;
             }
             this.clear();
-            return c.command;
+            return {
+                state: CommandState.Well,
+                command: c.command
+            };
          } else if(!c) {
              // not found in command map, confirm if is some commands' prefix.
              let isPrefix = false;
@@ -185,12 +192,18 @@ import { TextDecoder } from "util";
                  this._list = [];
                  this._repeat = false;
                  emacs.updateStatusBar(`${name} is undefined`);
-                 return;
+                 return {
+                     state: CommandState.UnDefined,
+                     command: new Command()
+                 };
              }
          }
 
          emacs.updateStatusBar(name + '-');
-         return;
+         return {
+             state: CommandState.InCompete,
+             command: new Command()
+         };
      }
 
      public clear() {
@@ -198,6 +211,39 @@ import { TextDecoder } from "util";
          emacs.updateStatusBar('');
      }
  }
+
+ /**
+  * rectangle ring
+  *
+  */
+export class RectangleText {
+    private _buf: string[];
+    private _width: number;
+    constructor(s: string) {
+        this._buf = s.split('\n');
+        this._width = 0;
+        for (const s of this._buf) {
+            if (this._width < s.length) {
+                this._width = s.length;
+            }
+        }
+    }
+
+    get height() {
+        return this._buf.length;
+    }
+
+    get width() {
+        return this._width;
+    }
+
+    *[Symbol.iterator]() {
+        for (const s of this._buf) {
+            yield s;
+        }
+    }
+
+}
 
 /**
  * emacs state
@@ -208,6 +254,8 @@ class Emacs {
     private _anchor: vscode.Position;
     private _editor: Editor;
     private _killRing: KillRing;
+    // Rectangle kill ring
+    private _rectangleRing: Ring<RectangleText>;
     private _yankRange: vscode.Range;  // for M-y
     // TODO
     private _markRing: Ring<vscode.Position>;
@@ -227,6 +275,7 @@ class Emacs {
         this._anchor = new vscode.Position(0, 0);
         this._editor = new Editor();
         this._killRing = new KillRing(20);
+        this._rectangleRing = new Ring(20);
         this._yankRange = new vscode.Range(0, 0, 0, 0);
         this._markRing = new Ring(20);
         this._commandRing = new Ring(20);
@@ -244,6 +293,10 @@ class Emacs {
 
     get mark() {
         return this._mark;
+    }
+
+    get markRing() {
+        return this._markRing;
     }
 
     public setMark(m: boolean, show: boolean = false) {
@@ -265,6 +318,10 @@ class Emacs {
 
     get killRing() {
         return this._killRing;
+    }
+
+    get rectangleRing() {
+        return this._rectangleRing;
     }
 
     get yankRange() {
@@ -291,14 +348,17 @@ class Emacs {
 
     public type(char: string): boolean {
         let c = this.command.push(char);
-        if (c) {
-            c.run();
-            this.traceCommand(c);
+        if (c.state === CommandState.Well) {
+            c.command.run();
+            this.traceCommand(c.command);
             return true;
+        } else if (c.state === CommandState.InCompete) {
+            return true;
+        } else {
+            this.setMark(false);
+            this.editor.sel = new vscode.Selection(this.editor.pos, this.editor.pos);
+            return false;
         }
-        this.setMark(false);
-        this.editor.sel = new vscode.Selection(this.editor.pos, this.editor.pos);
-        return false;
     }
 
     public traceCommand(command: Command): void {

@@ -160,6 +160,11 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "C-c",
+				"key": "ctrl+c",
+				"when": "editorTextFocus"
+			},
+			{
 				"command": "C-s",
 				"key": "ctrl+s",
 				"when": "editorTextFocus"

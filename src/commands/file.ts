@@ -28,3 +28,11 @@ class KillBuffer extends Command {
         runNativeCommand('workbench.action.closeActiveEditor');
     }
 }
+
+@registerGlobalCommand
+class SaveBuffersKillTerminal extends Command {
+    name = 'C-x C-c';
+    public run(): void {
+        runNativeCommand('workbench.action.quit');
+    }
+}

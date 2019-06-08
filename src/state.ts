@@ -393,6 +393,13 @@ class Emacs {
         return this._markRing;
     }
 
+    public setMarkPos(pos: vscode.Position) {
+        this._mark = true;
+        this._markRing.push(pos);
+        this._anchor = pos;
+        this.updateStatusBar('Mark set');
+    }
+
     public setMark(m: boolean, show: boolean = false) {
         if (m) {
             this._mark = true;

@@ -170,6 +170,16 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "C-;",
+				"key": "ctrl+;",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-z",
+				"key": "ctrl+z",
+				"when": "editorTextFocus"
+			},
+			{
 				"command": "M-[",
 				"key": "alt+[",
 				"when": ""
@@ -179,6 +189,17 @@
 				"key": "alt+]",
 				"when": ""
 			},
+			{
+				"command": "M-n",
+				"key": "alt+n",
+				"when": ""
+			},
+			{
+				"command": "M-p",
+				"key": "alt+p",
+				"when": ""
+			},
+
 
 
 			{

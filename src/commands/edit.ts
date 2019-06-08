@@ -56,14 +56,14 @@ class EditCommand extends Command {
         }
     }
 
-    public delete(range: Range, putInKillRing: boolean, concat: boolean = false) {
+    public delete(range: Range, putInKillRing: boolean, concat: boolean = false, positive: boolean = true) {
         let editor = emacs.editor.ed;
 
         if (putInKillRing) {
             let text = emacs.editor.text(range);
             if (text.length > 0) {
                 if (concat) {
-                    emacs.killRing.extendsBack(text);
+                    emacs.killRing.extendsBack(text, positive);
                 } else {
                     emacs.killRing.push(text);
                 }
@@ -211,8 +211,14 @@ class KillWord extends EditCommand {
     public editRun(doc: TextDocument, pos: Position): void {
         let forWord = logic.getForWardWordPos(doc, pos);
         let range = new Range(pos, forWord);
+
+        let name = emacs.commandRing.back();
+        if (name && name === this.name) {
+            this.delete(range, true, true);
+        } else {
         this.delete(range, true);
     }
+}
 }
 
 @registerGlobalCommand
@@ -221,8 +227,14 @@ class BackwardKillWord extends EditCommand {
     public editRun(doc: TextDocument, pos: Position): void {
         let backWord = logic.getBackWardWordPos(doc, pos);
         let range = new Range(backWord, pos);
+
+        let name = emacs.commandRing.back();
+        if (name && name === this.name) {
+            this.delete(range, true, true, false);
+        } else {
         this.delete(range, true);
     }
+}
 }
 
 @registerGlobalCommand
@@ -301,7 +313,7 @@ class KillRectangle extends EditCommand {
         let rs: Range[] = [];
         let s: string = '';
         for (let l = leftTop.line; l <= rightBottom.line; ++l) {
-            let c = leftTop.character !== rightBottom.character ? leftTop.character : doc.lineAt(l).text.length;
+            let c = leftTop.character !== rightBottom.character ? rightBottom.character : doc.lineAt(l).text.length;
             let startPos = new Position(l, leftTop.character);
             let endPos = new Position(l, c);
             let r = new Range(startPos, endPos);
@@ -314,5 +326,54 @@ class KillRectangle extends EditCommand {
         emacs.rectangleRing.push(new RectangleText(s));
         
         this.deleteRanges(rs);
+    }
+}
+
+@registerGlobalCommand
+class YankRectangle extends EditCommand {
+    name = 'C-x r y';
+    public editRun(doc: TextDocument, pos: Position) {
+        this.yank(doc, pos);
+    }
+
+    public async yank(doc: TextDocument, pos: Position) {
+        let r = emacs.rectangleRing.back();
+        if (!r) {
+            return;
+        }
+
+        let editor = emacs.editor.ed as TextEditor;
+        // expand line if line count unsatisfied
+        let h = r.height;
+        if (pos.line + h > doc.lineCount) {
+            let lastPos = new Position(doc.lineCount - 1, doc.lineAt(doc.lineCount - 1).text.length);
+            await editor.edit(editBuilder => {
+                editBuilder.insert(lastPos, '\n'.repeat(pos.line + h - doc.lineCount));
+            });
+        }
+        // expand character if character unsatisfired by prefix whitespace.
+        let chPerLine = pos.character;
+        let line = pos.line;
+        let endPos: Position = new Position(pos.line, pos.character);
+        for (let s of r) {
+            let insertPos: Position;
+            let chCount = doc.lineAt(line).text.length;
+            if (chPerLine > chCount) {
+                s = ' '.repeat(chPerLine - chCount) + s;
+                insertPos = new Position(line, chCount);
+                endPos = new Position(line, chCount + s.length);                
+            } else {
+                insertPos = new Position(line, chPerLine);
+                endPos = new Position(line, chPerLine + s.length);                
+            }
+            // yank
+            await editor.edit(editBuilder => {
+                editBuilder.insert(insertPos, s);
+            });
+
+            ++line;
+        }
+        emacs.setCurrentPosition(endPos);
+
     }
 }

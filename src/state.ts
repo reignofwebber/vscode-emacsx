@@ -126,13 +126,13 @@ import { TextDecoder } from "util";
         super(ringSize);
     }
 
-    public extendsBack(str: string) {
+    public extendsBack(str: string, positive: boolean = true) {
         if (this._data.length === 0) {
             this._data.push(str);
             return;
         }
         let s = this._data.pop();
-        this._data.push(s + str);
+        this._data.push(positive ? s + str : str + s);
     }
  }
 
@@ -157,12 +157,19 @@ import { TextDecoder } from "util";
                 command: keyMap[emacs.mode]['C-g'].command
              };
          // command buffer is empty and command === z and last command is C-x z
-         } else if (this._list.length ===0 && command === 'z' && this._repeat) {
-            this.clear();
-            return {
-                state: CommandState.Well,
-                command: keyMap[emacs.mode]['C-x z'].command
-            };
+         } else if (this._list.length ===0 && command.length === 1) {
+             if (command === 'z' && this._repeat) {
+                this.clear();
+                return {
+                    state: CommandState.Well,
+                    command: keyMap[emacs.mode]['C-x z'].command
+                };
+             } else {
+                 return {
+                     state: CommandState.UnDefined,
+                     command: new Command()
+                 };
+             }
          }
          this._list.push(command);
          let name = this._list.join(' ');

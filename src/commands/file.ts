@@ -36,3 +36,35 @@ class SaveBuffersKillTerminal extends Command {
         runNativeCommand('workbench.action.quit');
     }
 }
+
+@registerGlobalCommand
+class ToggleZenMode extends Command {
+    name = 'C-x C-z';
+    public run(): void {
+        runNativeCommand('workbench.action.toggleZenMode');
+    }
+}
+
+@registerGlobalCommand
+class CommentLine extends Command {
+    name = 'C-x C-;';
+    public run(): void {
+        runNativeCommand('editor.action.commentLine');
+    }
+}
+
+@registerGlobalCommand
+class SelectNextSuggestion extends Command {
+    name = 'M-n';
+    public run(): void {
+        runNativeCommand('selectNextSuggestion');
+    }
+}
+
+@registerGlobalCommand
+class SelectPrevSuggestion extends Command {
+    name = 'M-p';
+    public run(): void {
+        runNativeCommand('selectPrevSuggestion');
+    }
+}

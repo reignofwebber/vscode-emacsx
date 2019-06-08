@@ -17,7 +17,7 @@ export function dispatchCommand(command: string) {
             let repeat = c.repeat ? c.repeat.repeatByNumber ? c.repeat.num : repeatInitNumber ** c.repeat.num : 1;
             repeat = repeat || 1;
             for (let i = 0; i < repeat; ++i) {
-                c.command!.run();
+                c.command!.start();
             }
         }
 

@@ -38,10 +38,20 @@ class Repeat extends Command {
         if (name) {
             let c = keyMap[emacs.mode][name];
             if (c && c.command) {
-                c.command.run();
+                c.command.start();
                 emacs.traceCommand(c.command);
             }
         }
 
+    }
+}
+
+@registerGlobalCommand
+class ReadOnlyMode extends Command {
+    name = 'C-x C-q';
+    trace = false;
+    public run(): void {
+        emacs.isReadOnly = !emacs.isReadOnly;
+        emacs.updateStatusBar( emacs.isReadOnly? 'Read-Only mode enabled' : 'Read-Only mode disabled');
     }
 }

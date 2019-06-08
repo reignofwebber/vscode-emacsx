@@ -43,6 +43,22 @@ export class Command {
     cuPrefix: boolean = false;
     // trace
     trace: boolean = true;
+    // if change text
+    change: boolean = false;
+
+    public start(): void {
+        if (this.runCheck()) {
+            this.run();
+        }
+    }
+
+    public runCheck(): boolean {
+        // command is changable but editor is readonly
+        if (this.change && emacs.isReadOnly) {
+            return false;
+        }
+        return true;
+    }
 
     public run(): void {
 

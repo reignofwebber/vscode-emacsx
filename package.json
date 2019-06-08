@@ -183,6 +183,11 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "C-q",
+				"key": "ctrl+q",
+				"when": "editorTextFocus"
+			},			
+			{
 				"command": "M-[",
 				"key": "alt+[",
 				"when": ""

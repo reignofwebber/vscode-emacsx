@@ -361,6 +361,8 @@ class Emacs {
 
     // status bar
     private _statusItem: vscode.StatusBarItem;
+    // readonly 
+    private _readonly: boolean;
 
 
     constructor() {
@@ -375,6 +377,7 @@ class Emacs {
         this._commandRing = new Ring(20);
         this._commandContainer = new CommandContainer();
         this._statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
+        this._readonly = false;
     }
 
     set mode(m: Mode) {
@@ -387,6 +390,14 @@ class Emacs {
 
     get mark() {
         return this._mark;
+    }
+
+    get isReadOnly() {
+        return this._readonly;
+    }
+
+    set isReadOnly(is: boolean) {
+        this._readonly = is;
     }
 
     get markRing() {
@@ -450,10 +461,12 @@ class Emacs {
     public type(char: string): boolean {
         let c = this.command.push(char);
         if (c.state === CommandState.Well) {
-            c.command!.run();
+            c.command!.start();
             this.traceCommand(c.command);
             return true;
         } else if (c.state === CommandState.InCompete) {
+            return true;
+        } else if (this._readonly) {
             return true;
         } else {
             if (this._mark) {

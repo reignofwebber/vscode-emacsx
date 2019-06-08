@@ -47,6 +47,7 @@ class MotionExtCommand extends Command {
 @registerGlobalCommand
 class Undo extends Command {
     name = "C-/";
+    change = true;
     public run(): void {
         runNativeCommand("undo");
     }
@@ -55,6 +56,7 @@ class Undo extends Command {
 @registerGlobalCommand
 class Redo extends Command {
     name = "C-S-/";
+    change = true;
     public run(): void {
         runNativeCommand("redo");
     }

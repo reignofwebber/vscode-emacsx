@@ -11,7 +11,7 @@ export function active() {
 }
 
 class EditCommand extends Command {
-
+    change = true;
     get selection() :Selection | undefined {
         return emacs.editor.sel;
     }

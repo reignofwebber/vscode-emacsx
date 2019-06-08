@@ -188,6 +188,16 @@
 				"when": "editorTextFocus"
 			},			
 			{
+				"command": "M-m",
+				"key": "alt+m",
+				"when": "editorTextFocus"
+			},						
+			{
+				"command": "M-\\",
+				"key": "alt+\\",
+				"when": "editorTextFocus"
+			},								
+			{
 				"command": "M-[",
 				"key": "alt+[",
 				"when": ""

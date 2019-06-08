@@ -3,6 +3,7 @@ import { emacs, RectangleText } from "../state";
 import { runNativeCommand } from "../runner";
 import { registerGlobalCommand, Command } from "./base";
 import * as logic from "./logichelper";
+import _ = require("lodash");
 
 
 
@@ -289,6 +290,27 @@ class DeleteBlankLines extends EditCommand {
             });
         }
 
+    }
+}
+
+@registerGlobalCommand
+class DeleteHorizontalSpace extends EditCommand {
+    name = 'M-\\';
+    public editRun(doc: TextDocument, pos: Position) {
+        if (pos.character === 0) {
+            return;
+        }
+
+        let c = _.findLastIndex(doc.lineAt(pos.line).text, c => {
+            return ' \t'.indexOf(c) === -1;
+        }, pos.character - 1) + 1;
+        
+        // no space to trim
+        if (c === pos.character) {
+            return;
+        }
+        
+        this.delete(new Range(new Position(pos.line, c), pos), false);
     }
 }
 

@@ -4,6 +4,7 @@ import { runNativeCommand } from "../runner";
 import { wordSeparators } from "../configure";
 import { registerGlobalCommand, Command } from "./base";
 import * as logic from "./logichelper";
+import _ = require("lodash");
 
 
 export function active() {
@@ -283,4 +284,15 @@ class RecenterTopBottom extends MotionCommand {
         });
         return;
     }
+}
+
+@registerGlobalCommand
+class BackToIndentation extends MotionCommand {
+    name = 'M-m';
+    public motionRun(doc: TextDocument, pos: Position): Position | undefined {
+        let c = _.findIndex(doc.lineAt(pos.line).text, c => {
+            return ' \t'.indexOf(c) === -1;
+        });
+        return new Position(pos.line, c === -1 ? 0 : c);
+    }    
 }

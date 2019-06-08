@@ -165,6 +165,7 @@ import { TextDecoder } from "util";
                     command: keyMap[emacs.mode]['C-x z'].command
                 };
              } else {
+                //  console.log(`emacsx..${command}`);
                  return {
                      state: CommandState.UnDefined,
                      command: new Command()
@@ -362,8 +363,10 @@ class Emacs {
         } else if (c.state === CommandState.InCompete) {
             return true;
         } else {
-            this.setMark(false);
-            this.editor.sel = new vscode.Selection(this.editor.pos, this.editor.pos);
+            if (this._mark) {
+                this.setMark(false);                
+                this.setCurrentPosition();                
+            }
             return false;
         }
     }

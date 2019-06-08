@@ -32,7 +32,6 @@ export function activate(context: vscode.ExtensionContext) {
 				text: arg.text
 			});
 		}
-
 	}));
 }
 

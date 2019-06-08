@@ -13,3 +13,4 @@ function getWordSeparators(): string {
 let selfConfig = vscode.workspace.getConfiguration('emacsx');
 
 export let useExtendCommand: boolean = selfConfig.useExtendCommand;
+export let repeatInitNumber: number = 4;

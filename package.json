@@ -87,7 +87,6 @@
 				"key": "ctrl+l",
 				"when": "editorTextFocus"
 			},
-
 			{
 				"command": "C-d",
 				"key": "ctrl+d",
@@ -138,7 +137,6 @@
 				"key": "ctrl+o",
 				"when": "editorTextFocus"
 			},
-
 			{
 				"command": "C-/",
 				"key": "ctrl+/",
@@ -168,7 +166,7 @@
 				"command": "C-u",
 				"key": "ctrl+u",
 				"when": "editorTextFocus"
-			},			
+			},
 			{
 				"command": "C-s",
 				"key": "ctrl+s",
@@ -204,21 +202,13 @@
 				"key": "alt+p",
 				"when": ""
 			},
-
-
-
 			{
 				"command": "C-Spc",
 				"key": "ctrl+space",
 				"when": "editorTextFocus"
 			}
-
-
-
-
-
 		],
-		"configuration":[
+		"configuration": [
 			{
 				"type": "object",
 				"title": "emacsx configuration",
@@ -243,7 +233,9 @@
 		"typescript": "^3.3.1",
 		"vscode": "^1.1.28",
 		"tslint": "^5.12.1",
+		"lodash": "^4.17.11",
 		"@types/node": "^10.12.21",
-		"@types/mocha": "^2.2.42"
+		"@types/mocha": "^2.2.42",
+		"@types/lodash": "^4.14.134"
 	}
 }

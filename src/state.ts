@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { keyMap, Mode, Command, ICommand, CommandState } from "./commands/base";
 import { TextDecoder } from "util";
 import { runNativeCommand } from "./runner";
+import { repeatInitNumber } from "./configure";
 
 /**
  * editor: wrap vscode editor
@@ -96,7 +97,8 @@ class Ring<T> {
         this._curPos = this._data.length - 1;
     }
 
-    public rolling(): T | null {
+    // TODO rolling number
+    public rolling(num: number = 1): T | null {
         if (this._data.length === 0) {
             return null;
         }
@@ -143,7 +145,6 @@ class CommandContainer {
     private _list: string[];
     private _repeat: boolean;
 
-    private _initArg: number = 4;
     private _curArg: number;
 
     constructor() {
@@ -236,20 +237,23 @@ class CommandContainer {
             } else {
                 this._repeat = false;
             }
-            let repeat = 1;
+            // run with repeat
+            let repeat = 0;
             if (i > 0) {
-                repeat = this._curArg ? this._curArg : this._initArg ** i;
+                repeat = this._curArg ? this._curArg : i;
             }
             // clear list and _curArg
             this.clear();
             return {
                 state: CommandState.Well,
-                repeat: repeat,
+                repeat: {
+                    num: repeat,
+                    repeatByNumber: this._curArg ? true : false
+                },
                 command: c.command
             };
         } else if (i && name.length === 1) {
             let curArg = this._curArg;
-            let initArg = this._initArg;
             this.clear();
             return {
                 state: CommandState.Well,
@@ -258,7 +262,7 @@ class CommandContainer {
                     public run() {
                         let repeat = 1;
                         if (i > 0) {
-                            repeat = curArg ? curArg : initArg ** i;
+                            repeat = curArg ? curArg : repeatInitNumber ** i;
                         }
                         for (let i = 0; i < repeat; ++i) {
                             runNativeCommand('default:type', {
@@ -347,7 +351,7 @@ class Emacs {
     // Rectangle kill ring
     private _rectangleRing: Ring<RectangleText>;
     private _yankRange: vscode.Range;  // for M-y
-    // TODO
+    // TODO per editor, per markRing
     private _markRing: Ring<vscode.Position>;
     // command history
     private _commandRing: Ring<string>;

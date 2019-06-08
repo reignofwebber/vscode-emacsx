@@ -23,9 +23,14 @@ export enum CommandState {
     Well
 };
 
+export interface IRepeat {
+    num: number;
+    repeatByNumber: boolean;
+}
+
 export interface ICommand {
     state: CommandState;
-    repeat?: number;
+    repeat?: IRepeat;
     command?: Command;
 }
 
@@ -34,10 +39,16 @@ export class Command {
     name: string = "";
     // is prefix e.g. C-u C-x
     prefix: boolean = false;
+    // override C-u
+    cuPrefix: boolean = false;
     // trace
     trace: boolean = true;
 
     public run(): void {
+
+    }
+
+    public runWithRepeat(repeat: IRepeat | undefined): void {
 
     }
 }

@@ -1,5 +1,6 @@
 import { emacs } from "../state";
-import { registerGlobalCommand, Command } from "./base";
+import { registerGlobalCommand, Command, IRepeat } from "./base";
+
 
 export function active() {
 
@@ -9,8 +10,16 @@ export function active() {
 @registerGlobalCommand
 class MarkCommand extends Command {
     name = "C-Spc";
-    public run(): void {
-        emacs.toggleMark();
+    cuPrefix = true;
+    public runWithRepeat(repeat: IRepeat | undefined): void {
+        if (repeat && repeat.num) {
+            let pos = emacs.markRing.rolling();
+            if (pos) {
+                emacs.setCurrentPosition(pos);
+            }
+        } else {
+            emacs.toggleMark();
+        }
     }
 }
 
@@ -21,3 +30,12 @@ class ExchangePointAndMark extends Command {
         emacs.exchangeMark();
     }
 }
+
+@registerGlobalCommand
+class PopGlobalMark extends Command {
+    name = 'C-x C-Spc';
+    public run(): void {
+        emacs.markRing.clear();
+    }
+}
+

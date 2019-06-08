@@ -24,6 +24,12 @@ class CxPrefix extends Command {
 }
 
 @registerGlobalCommand
+class CuPrefix extends Command {
+    name = 'C-u';
+    prefix = true;
+}
+
+@registerGlobalCommand
 class Repeat extends Command {
     name = "C-x z";
     trace = false;

@@ -10,7 +10,10 @@ export function runNativeCommand(command: string, ...rest: any[]) {
 export function dispatchCommand(command: string) {
     let c = emacs.command.push(command);
     if (c.state === CommandState.Well) {
-        c.command.run();
+        let repeat = c.repeat || 1;
+        for (let i = 0; i < repeat; ++i) {
+            c.command!.run();
+        }
         emacs.traceCommand(c.command);
     }
 }

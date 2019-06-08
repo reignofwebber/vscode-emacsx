@@ -165,6 +165,11 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "C-u",
+				"key": "ctrl+u",
+				"when": "editorTextFocus"
+			},			
+			{
 				"command": "C-s",
 				"key": "ctrl+s",
 				"when": "editorTextFocus"
@@ -203,7 +208,7 @@
 
 
 			{
-				"command": "C-spc",
+				"command": "C-Spc",
 				"key": "ctrl+space",
 				"when": "editorTextFocus"
 			}

@@ -25,7 +25,8 @@ export enum CommandState {
 
 export interface ICommand {
     state: CommandState;
-    command: Command;
+    repeat?: number;
+    command?: Command;
 }
 
 export class Command {

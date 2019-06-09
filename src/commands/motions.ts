@@ -207,7 +207,7 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
         let range0 = editor.visibleRanges[0];
 
         let c = emacs.commandRing.back();
-        if (!(c && c === 'M-r')) {
+        if (!(c && c.name === 'M-r')) {
             this.curPos = "bottom";
         }
 
@@ -268,7 +268,7 @@ class RecenterTopBottom extends MotionCommand {
     private curPos: "center" | "top" | "bottom" = "bottom";
     public motionRun(doc: TextDocument, pos: Position): Position | undefined {
         let c = emacs.commandRing.back();
-        if (!(c && c === 'C-l')) {
+        if (!(c && c.name === 'C-l')) {
             this.curPos = "bottom";
         }
         if (this.curPos === "bottom") {

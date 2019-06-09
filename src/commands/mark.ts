@@ -1,5 +1,5 @@
 import { emacs } from "../state";
-import { registerGlobalCommand, Command, IRepeat } from "./base";
+import { registerGlobalCommand, Command, IRepeat, RepeatType } from "./base";
 import { Selection, Position } from "vscode";
 
 
@@ -11,9 +11,10 @@ export function active() {
 @registerGlobalCommand
 class MarkCommand extends Command {
     name = "C-Spc";
-    cuPrefix = true;
-    public runWithRepeat(repeat: IRepeat | undefined): void {
-        if (repeat && repeat.num) {
+    repeatType = RepeatType.Accept;
+    public run(arg: any, repeat?: IRepeat): void {
+        if (repeat) {
+            // TODO rolling a number
             let pos = emacs.markRing.rolling();
             if (pos) {
                 emacs.setCurrentPosition(pos);

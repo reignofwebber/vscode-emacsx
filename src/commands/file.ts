@@ -1,7 +1,7 @@
 import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
-import { registerGlobalCommand, Command } from "./base";
+import { registerGlobalCommand, Command, RepeatType } from "./base";
 import * as logic from "./logichelper";
 import { start } from "repl";
 
@@ -32,6 +32,7 @@ class KillBuffer extends Command {
 @registerGlobalCommand
 class SaveBuffersKillTerminal extends Command {
     name = 'C-x C-c';
+    repeatType = RepeatType.Reject;    
     public run(): void {
         runNativeCommand('workbench.action.quit');
     }
@@ -40,6 +41,7 @@ class SaveBuffersKillTerminal extends Command {
 @registerGlobalCommand
 class ToggleZenMode extends Command {
     name = 'C-x C-z';
+    repeatType = RepeatType.Reject;
     public run(): void {
         runNativeCommand('workbench.action.toggleZenMode');
     }
@@ -48,6 +50,8 @@ class ToggleZenMode extends Command {
 @registerGlobalCommand
 class CommentLine extends Command {
     name = 'C-x C-;';
+    change = true;
+    repeatType = RepeatType.Reject;    
     public run(): void {
         runNativeCommand('editor.action.commentLine');
     }

@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
-import { keyMap, Mode, Command, ICommand, CommandState } from "./commands/base";
-import { TextDecoder } from "util";
-import { runNativeCommand } from "./runner";
-import { repeatInitNumber } from "./configure";
+import { keyMap, Mode, Command, ICommand } from "./commands/base";
+import _ = require("lodash");
+import { type } from "os";
 
 /**
  * editor: wrap vscode editor
@@ -141,167 +140,93 @@ class KillRing extends Ring<string> {
 
 
 
-class CommandContainer {
+export class CommandContainer {
     private _list: string[];
-    private _repeat: boolean;
 
-    private _curArg: number;
+    private _curCommand: Command;
+
+    private readonly c_nothing = keyMap[Mode.Global]['__nothing__'];
+    private readonly c_type = keyMap[Mode.Global]['__default:type__'];
+    private readonly c_quit = keyMap[Mode.Global]['C-g'];
+
 
     constructor() {
         this._list = [];
-        this._repeat = false;
-        this._curArg = 0;
+        this._curCommand = this.c_nothing;
     }
 
-    public push(command: string): ICommand {
-        if (command === 'C-g') {
-            this._list = [];
-            this._repeat = false;
-            return {
-                state: CommandState.Well,
-                command: keyMap[emacs.mode]['C-g'].command
-            };
-            // command buffer is empty and command === z and last command is C-x z            
-        } else if (this._list.length === 0 && command.length === 1) {
-            if (command === 'z' && this._repeat) {
-                this.clear();
-                return {
-                    state: CommandState.Well,
-                    command: keyMap[emacs.mode]['C-x z'].command
-                };
-            } else {
-                return {
-                    state: CommandState.UnDefined,
-                };
-            }
-        } else if (this._list.length && this._list[0] === 'C-u') {
-            let n = Number.parseInt(command);
-            // argument is over or C-u triggered.
-            if (isNaN(n)) {
-                if (command === 'C-u') {
-                    // no number input
-                    if (this._curArg === 0) {
-                        this._list.push(command);
-                        let s = this._list.join(' ');
-                        emacs.updateStatusBar(s + '-');
-                        return {
-                            state: CommandState.InCompete
-                        };
-                    }
-                }
-            } else {
-                // ensure list has only one 'C-u' prefix
-                let i = 0;
-                for (; i < this._list.length; i++) {
-                    const c = this._list[i];
-                    if (c !== 'C-u') {
-                        break;
-                    }
-                }
-                this._list = this._list.slice(i - 1);
-                this._curArg *= 10;
-                this._curArg += n;
-                emacs.updateStatusBar('C-u ' + this._curArg.toString() + '-');
-                return {
-                    state: CommandState.InCompete
-                };
-            }
+    /**
+     * 
+     * @param command 
+     * @param get get command without active it. 
+     */
+    public push(command: string, run: boolean = true): "undefined" | "incomplete" | ICommand {
+        // if last command is active
+        if (this._curCommand.isActive && this._curCommand.push(command)) {
+            return "incomplete";
         }
-
-        // push command to list
+        // quit active
+        if ('C-g' === command) {
+            if (run) this.c_quit.active();
+            return {
+                command: this.c_quit
+            }
+        }        
+        // find command
         this._list.push(command);
-        // find command strip 'C-u'
-        let i = 0;
-        for (; i < this._list.length; i++) {
-            const c = this._list[i];
-            if (c !== 'C-u') {
-                break;
-            }
-        }
-        let cuName = '';
-        let name = this._list.slice(i).join(' ');
-        if (i > 0) {
-            if (this._curArg) {
-                cuName = 'C-u ' + this._curArg.toString() + ' ';
-            } else {
-                cuName = this._list.slice(0, i).join(' ') + ' ';
-            }
+        let cName = this._list.join(' ');
+        let c = this.getCommand(cName);
 
-        }
-
-        let c = keyMap[emacs.mode][name];
-        // do not return a prefix command
-        if (c && !c.command!.prefix) {
-            if (c.command!.name === 'C-x z') {
-                this._repeat = true;
-            } else {
-                this._repeat = false;
-            }
-            // run with repeat
-            let repeat = 0;
-            if (i > 0) {
-                repeat = this._curArg ? this._curArg : i;
-            }
-            // clear list and _curArg
+        // find a command
+        if (c) {
             this.clear();
+            if (run) c.active();
+            this._curCommand = c;
             return {
-                state: CommandState.Well,
-                repeat: {
-                    num: repeat,
-                    repeatByNumber: this._curArg ? true : false
-                },
-                command: c.command
+                command: c
             };
-        } else if (i && name.length === 1) {
-            let curArg = this._curArg;
+        // type active
+        } else if (cName.length === 1) {
+            this.clear();            
+            if (run) this.c_type.active(cName);
+            return {
+                command: this.c_type,
+                arg: cName
+            }
+        // command is undefined
+        } else if (!this.isPrefix(cName)) {
             this.clear();
-            return {
-                state: CommandState.Well,
-                command: new class extends Command {
-                    trace = false;
-                    public run() {
-                        let repeat = 1;
-                        if (i > 0) {
-                            repeat = curArg ? curArg : repeatInitNumber ** i;
-                        }
-                        for (let i = 0; i < repeat; ++i) {
-                            runNativeCommand('default:type', {
-                                text: name
-                            });
-                        }
-                    }
-                }
-            };
-            // c is undefined;
-        } else if (!c) {
-            // not found in command map, confirm if is some commands' prefix.
-            let isPrefix = false;
-            for (let k in keyMap[emacs.mode]) {
-                if (k.indexOf(name) === 0) {
-                    isPrefix = true;
-                    break;
-                }
-            }
-            if (!isPrefix) {
-                this._list = [];
-                this._repeat = false;
-                emacs.updateStatusBar(`${name} is undefined`);
-                return {
-                    state: CommandState.UnDefined,
-                };
-            }
-            // trigger C-u `letter`
+            emacs.updateStatusBar(`${cName} is undefined`);
+            return "undefined";
+        // command is incomplete
+        } else {
+            emacs.updateStatusBar(command, true);
+            return "incomplete";
         }
+    }
 
-        emacs.updateStatusBar(cuName + name + '-');
-        return {
-            state: CommandState.InCompete,
-        };
+    private getCommand(key: string): Command | undefined {
+        let m: Mode = _.find(emacs.modes, m => {
+            return keyMap[m][key];
+        }) as Mode;
+
+        return m === undefined ? undefined : keyMap[m][key];
+    }
+
+    private isPrefix(key: string): boolean {
+        for (let m of emacs.modes) {
+            if (_.find(Object.keys(keyMap[m]), s => {
+                return s.indexOf(key) === 0;
+            })) {
+                return true;
+            }
+
+        }
+        return false;
     }
 
     public clear() {
         this._list = [];
-        this._curArg = 0;
         emacs.updateStatusBar('');
     }
 }
@@ -343,7 +268,7 @@ export class RectangleText {
  * emacs state
  */
 class Emacs {
-    private _mode: Mode;
+    private _modes: Mode[];
     private _mark: boolean;
     private _anchor: vscode.Position;
     private _editor: Editor;
@@ -354,7 +279,7 @@ class Emacs {
     // TODO per editor, per markRing
     private _markRing: Ring<vscode.Position>;
     // command history
-    private _commandRing: Ring<string>;
+    private _commandRing: Ring<Command>;
 
     // command container
     private _commandContainer: CommandContainer;
@@ -366,7 +291,7 @@ class Emacs {
 
 
     constructor() {
-        this._mode = Mode.Global;
+        this._modes = [Mode.Global];
         this._mark = false;
         this._anchor = new vscode.Position(0, 0);
         this._editor = new Editor();
@@ -380,12 +305,18 @@ class Emacs {
         this._readonly = false;
     }
 
-    set mode(m: Mode) {
-        this._mode = m;
+    public addMode(m: Mode) {
+        let i = _.find(this._modes, v => {
+            return m === v;
+        });
+        if (!i) {
+            this._modes.push(m);
+        }
+        this._modes.sort();
     }
 
-    get mode() {
-        return this._mode;
+    get modes() {
+        return this._modes;
     }
 
     get mark() {
@@ -453,34 +384,44 @@ class Emacs {
     }
 
 
-    public updateStatusBar(str: string) {
-        this._statusItem.text = str;
+    public updateStatusBar(str: string, joinCommand: boolean = false) {
+        if (joinCommand) {
+            let text = this._statusItem.text;
+            if (text.indexOf('-') !== -1) {
+                text = text.replace(/-$/, ` ${str}-`);
+                this._statusItem.text = text;
+            } else {
+                this._statusItem.text = (str + '-');
+            }
+        } else {
+            this._statusItem.text = str;
+        }
+
         this._statusItem.show();
     }
 
     public type(char: string): boolean {
-        let c = this.command.push(char);
-        if (c.state === CommandState.Well) {
-            c.command!.start();
-            this.traceCommand(c.command);
-            return true;
-        } else if (c.state === CommandState.InCompete) {
-            return true;
-        } else if (this._readonly) {
-            return true;
-        } else {
-            if (this._mark) {
-                this.setMark(false);
-                this.setCurrentPosition();
-            }
-            return false;
-        }
+        // let c = this.command.push(char);
+        // if (c.state === CommandState.Well) {
+        //     c.command!.active();
+        //     this.traceCommand(c.command);
+        //     return true;
+        // } else if (c.state === CommandState.InCompete) {
+        //     return true;
+        // } else if (this._readonly) {
+        //     return true;
+        // } else {
+        //     if (this._mark) {
+        //         this.setMark(false);
+        //         this.setCurrentPosition();
+        //     }
+        //     return false;
+        // }
+        return false;
     }
 
-    public traceCommand(command: Command | undefined): void {
-        if (command && command.trace) {
-            this._commandRing.push(command.name);
-        }
+    public traceCommand(command: Command): void {
+        this._commandRing.push(command);        
     }
 
     public toggleMark(): void {

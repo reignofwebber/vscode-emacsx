@@ -1,14 +1,13 @@
 import { emacs } from "../state";
-import { useExtendCommand } from "../configure";
 
 
 export enum Mode {
-    Fundemental = 'Fundemental',
-    Global = 'Global'
-}
+    Global,
+    Fundemental
+};
 
 type KeyBinding = {
-    [key: string]: ICommand
+    [key: string]: Command
 };
 
 export let keyMap: {
@@ -17,42 +16,73 @@ export let keyMap: {
     [Mode.Global] : {}
 };
 
-export enum CommandState {
-    UnDefined,
-    InCompete,
-    Well
-};
-
 export interface IRepeat {
     num: number;
     repeatByNumber: boolean;
 }
 
+export enum RepeatType {
+    // repeat run()
+    Default,
+    // repeat as argument run(arg)
+    Accept,
+    // not support repeat
+    Reject,
+};
+
+
 export interface ICommand {
-    state: CommandState;
-    repeat?: IRepeat;
-    command?: Command;
+    command: Command;
+    arg?: any;
 }
 
+@registerGlobalCommand
 export class Command {
     // name of Command
-    name: string = "";
-    // is prefix e.g. C-u C-x
-    prefix: boolean = false;
-    // override C-u
-    cuPrefix: boolean = false;
-    // trace
-    trace: boolean = true;
+    name: string = "__nothing__";
+    // trace (if emacs trace this command name)
+    _trace: boolean = true;
     // if change text
     change: boolean = false;
+    // repeat type
+    repeatType: RepeatType = RepeatType.Default;
+    // if need followed command, (true is active)
+    private _state: boolean = false;
+    // if stay state, if true, active() will not set InActive state.
+    private _stayActive: boolean = false;
 
-    public start(): void {
-        if (this.runCheck()) {
-            this.run();
+    // must override push() method to deactive command
+    protected set stayActive(s: boolean) {
+        this._stayActive = s;
+        if (!s) {
+            this._state = false;
+            this.deactive();
         }
     }
 
-    public runCheck(): boolean {
+    get isActive() {
+        return this._state;
+    } 
+    
+    public active(...arg: any[]): void {
+        this._state = true;
+        if (this.runCheck(...arg)) {
+            this.run(...arg);
+        }
+        if (!this._stayActive) {
+            this._state = false;
+            this.deactive();
+        }
+
+        if (this._trace) {
+            emacs.traceCommand(this);
+        }
+    }
+
+    /**
+     * before run command. need some environment satisfied.
+     */
+    public runCheck(...arg: any[]): boolean {
         // command is changable but editor is readonly
         if (this.change && emacs.isReadOnly) {
             return false;
@@ -60,38 +90,32 @@ export class Command {
         return true;
     }
 
-    public run(): void {
+    /**
+     * command run
+     */
+    public run(...arg: any[]): void {
 
     }
 
-    public runWithRepeat(repeat: IRepeat | undefined): void {
+    /**
+     * push() override for active command
+     * @param arg push override
+     * @return accept or reject arg
+     */
+    public push(arg: string):boolean {
+        return false;
+    }
+
+    /**
+     * clean 
+     */
+    public deactive() {
 
     }
 }
 
 export function registerGlobalCommand(command: typeof Command) {
     let c = new command();
-    keyMap[Mode.Global][c.name] = {
-        state: CommandState.Well,
-        command: c
-    };
+    keyMap[Mode.Global][c.name] = c;
 }
 
-// active commands
-
-import * as motions from "./motions";
-import * as mark from "./mark";
-import * as edit from "./edit";
-import * as control from "./control";
-import * as file from "./file";
-import * as extend from "./extend";
-
-
-motions.active();
-mark.active();
-edit.active();
-control.active();
-file.active();
-if (useExtendCommand) {
-    extend.active();
-}

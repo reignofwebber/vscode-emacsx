@@ -1,7 +1,7 @@
 import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
 import { emacs, RectangleText } from "../state";
 import { runNativeCommand } from "../runner";
-import { registerGlobalCommand, Command } from "./base";
+import { registerGlobalCommand, Command, IRepeat } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
 
@@ -9,6 +9,18 @@ import _ = require("lodash");
 
 export function active() {
 
+}
+
+@registerGlobalCommand
+class DefaultType extends Command {
+    name = '__default:type__';
+    change = true;
+    public run(c: string, repeat?: IRepeat): void {
+        let r = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
+        runNativeCommand('default:type', {
+            text: c.repeat(r)
+		});
+    }
 }
 
 class EditCommand extends Command {
@@ -138,8 +150,8 @@ class KillLine extends EditCommand {
             range = new Range(pos.line, pos.character, pos.line, l);
         }
 
-        let name = emacs.commandRing.back();
-        if (name && name === this.name) {
+        let c = emacs.commandRing.back();
+        if (c && c.name === this.name) {
             this.delete(range, true, true);
         } else {
             this.delete(range, true);
@@ -192,15 +204,15 @@ class Yank extends EditCommand {
 class YankPop extends EditCommand {
     name = "M-y";
     public editRun(doc: TextDocument, pos: Position): void {
-        let name = emacs.commandRing.back();
-        if (name && (name === 'C-y' || name === 'M-y')) {
+        let c = emacs.commandRing.back();
+        if (c && (c.name === 'C-y' || c.name === 'M-y')) {
             let text = emacs.killRing.rolling();
             if (text) {
                 this.replace(emacs.yankRange, text);
             }
-            this.trace = true;
+            this._trace = true;
         } else {
-            this.trace = false;
+            this._trace = false;
             emacs.updateStatusBar('Previous commond was not a yank');
         }
     }
@@ -213,8 +225,8 @@ class KillWord extends EditCommand {
         let forWord = logic.getForWardWordPos(doc, pos);
         let range = new Range(pos, forWord);
 
-        let name = emacs.commandRing.back();
-        if (name && name === this.name) {
+        let c = emacs.commandRing.back();
+        if (c && c.name === this.name) {
             this.delete(range, true, true);
         } else {
         this.delete(range, true);
@@ -229,8 +241,8 @@ class BackwardKillWord extends EditCommand {
         let backWord = logic.getBackWardWordPos(doc, pos);
         let range = new Range(backWord, pos);
 
-        let name = emacs.commandRing.back();
-        if (name && name === this.name) {
+        let c = emacs.commandRing.back();
+        if (c && c.name === this.name) {
             this.delete(range, true, true, false);
         } else {
         this.delete(range, true);

@@ -1,4 +1,5 @@
 import { emacs } from "../state";
+import { runNativeCommand } from "../runner";
 
 
 export enum Mode {
@@ -117,5 +118,26 @@ export class Command {
 export function registerGlobalCommand(command: typeof Command) {
     let c = new command();
     keyMap[Mode.Global][c.name] = c;
+}
+
+@registerGlobalCommand
+class KeyboardQuit extends Command {
+    name = "C-g";
+    public run(): void {
+        emacs.command.clear();
+        emacs.updateStatusBar("Quit");
+    }
+}
+
+@registerGlobalCommand
+class DefaultType extends Command {
+    name = '__default:type__';
+    change = true;
+    public run(c: string, repeat?: IRepeat): void {
+        let r = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
+        runNativeCommand('default:type', {
+            text: c.repeat(r)
+		});
+    }
 }
 

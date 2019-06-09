@@ -11,18 +11,6 @@ export function active() {
 
 }
 
-@registerGlobalCommand
-class DefaultType extends Command {
-    name = '__default:type__';
-    change = true;
-    public run(c: string, repeat?: IRepeat): void {
-        let r = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
-        runNativeCommand('default:type', {
-            text: c.repeat(r)
-		});
-    }
-}
-
 class EditCommand extends Command {
     change = true;
     get selection() :Selection | undefined {

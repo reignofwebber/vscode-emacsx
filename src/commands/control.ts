@@ -11,14 +11,6 @@ export function active() {
 
 }
 
-@registerGlobalCommand
-class KeyboardQuit extends Command {
-    name = "C-g";
-    public run(): void {
-        emacs.command.clear();
-        emacs.updateStatusBar("Quit");
-    }
-}
 
 @registerGlobalCommand
 class UniversalArgument extends Command {

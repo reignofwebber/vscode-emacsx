@@ -331,7 +331,7 @@ class FakeSearch extends Command {
             let doc = editor.document;
             let pos = emacs.editor.pos;
             let newPos = this.increase ? this.getNext(doc, pos, s) : this.getPrev(doc, pos, s);
-            emacs.setCurrentPosition(newPos);
+            emacs.setCurrentPosition(newPos, true);
             this.posHistory.push({
                 s: s,
                 p: newPos
@@ -346,7 +346,7 @@ class FakeSearch extends Command {
             this.posHistory.pop();
             emacs.updateStatusBar(( this.increase? 'FakeIsearch: ' : 'FakeIsearch backward: ') + this.getHistoryStr());
             if (this.posHistory.length !== 0) {
-                emacs.setCurrentPosition(this.posHistory[this.posHistory.length - 1].p);
+                emacs.setCurrentPosition(this.posHistory[this.posHistory.length - 1].p, true);
             }
             return true;
         } else {

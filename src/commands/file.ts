@@ -22,6 +22,14 @@ class SaveBuffer extends Command {
 }
 
 @registerGlobalCommand
+class CodeSaveAllFiles extends Command {
+    name = 'C-x s';
+    public run(): void {
+        runNativeCommand('workbench.action.files.saveAll');
+    }   
+}
+
+@registerGlobalCommand
 class KillBuffer extends Command {
     name = 'C-x k';
     public run(): void {

@@ -90,3 +90,11 @@ class CodeFind extends Command {
     }
 
 }
+
+@registerGlobalCommand
+class CodeQuickOpen extends Command {
+    name = 'C-x C-f';
+    public run(): void {
+        runNativeCommand('workbench.action.quickOpen');
+    }
+}

@@ -400,6 +400,10 @@ class Emacs {
         this._statusItem.show();
     }
 
+    public appendStatus(str: string) {
+        this._statusItem.text = this._statusItem.text + ' ' + str;
+    }
+
     public type(char: string): boolean {
         // let c = this.command.push(char);
         // if (c.state === CommandState.Well) {

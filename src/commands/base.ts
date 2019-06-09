@@ -133,11 +133,21 @@ class KeyboardQuit extends Command {
 class DefaultType extends Command {
     name = '__default:type__';
     change = true;
+    repeatType = RepeatType.Accept;
     public run(c: string, repeat?: IRepeat): void {
         let r = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
         runNativeCommand('default:type', {
             text: c.repeat(r)
 		});
+    }
+}
+
+@registerGlobalCommand
+class DeleteLeft extends Command {
+    name = 'Del';
+    change = true;
+    public run(c: string): void {
+        runNativeCommand('deleteLeft');
     }
 }
 

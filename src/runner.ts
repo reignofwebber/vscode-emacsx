@@ -6,5 +6,5 @@ import { repeatInitNumber } from "./configure";
 
 
 export function runNativeCommand(command: string, ...rest: any[]) {
-    vscode.commands.executeCommand(command, ...rest);
+    return vscode.commands.executeCommand(command, ...rest);
 }

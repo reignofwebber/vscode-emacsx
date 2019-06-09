@@ -1,8 +1,8 @@
-import {TextDocument, Position, TextEditor} from "vscode";
+import {TextDocument, Position, TextEditor, TextEditorCursorStyle} from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
 import { wordSeparators } from "../configure";
-import { registerGlobalCommand, Command } from "./base";
+import { registerGlobalCommand, Command, RepeatType } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
 
@@ -295,4 +295,122 @@ class BackToIndentation extends MotionCommand {
         });
         return new Position(pos.line, c === -1 ? 0 : c);
     }    
+}
+
+
+class FakeSearch extends Command {
+    protected increase = true;
+    repeatType = RepeatType.Reject;
+    private posHistory: {
+        s: string;
+        p: Position;
+    }[] = [];
+    public run() {
+        this.stayActive = true;
+        this.posHistory.push({
+            s: '',
+            p: emacs.editor.pos
+        });
+        emacs.updateStatusBar(this.increase ? 'FakeIsearch: ' : 'FakeIsearch backward: ');
+    }
+
+    public push(s: string): boolean {
+        if (/^[\x00-\x7f]$/.exec(s)) {
+            let editor = emacs.editor.ed;
+            if (!editor) {
+                this.stayActive = false;
+                return false;
+            }
+
+            // enter to esc
+            if (s === '\n') {
+                this.stayActive = false;
+                return true;
+            }
+
+            let doc = editor.document;
+            let pos = emacs.editor.pos;
+            let newPos = this.increase ? this.getNext(doc, pos, s) : this.getPrev(doc, pos, s);
+            emacs.setCurrentPosition(newPos);
+            this.posHistory.push({
+                s: s,
+                p: newPos
+            });
+            emacs.updateStatusBar(( this.increase ? 'FakeIsearch: ' : 'FakeIsearch backward: ') + this.getHistoryStr());
+            return true;
+        } else if (s === 'Del') {
+            // don't pop initial position
+            if (this.posHistory.length === 1) {
+                return true;
+            }
+            this.posHistory.pop();
+            emacs.updateStatusBar(( this.increase? 'FakeIsearch: ' : 'FakeIsearch backward: ') + this.getHistoryStr());
+            if (this.posHistory.length !== 0) {
+                emacs.setCurrentPosition(this.posHistory[this.posHistory.length - 1].p);
+            }
+            return true;
+        } else {
+            this.stayActive = false;
+            return false;
+        }
+    }
+
+    private getHistoryStr() {
+        let str = '';
+        this.posHistory.forEach(v => {
+            str += (' ' + v.s);
+        })
+        return str;
+    }
+
+    private getNext(doc: TextDocument, pos: Position, s: string) {
+        let curLine = pos.line;
+        let c = pos.character;
+        while (curLine <= doc.lineCount - 1) {
+            c = _.findIndex(doc.lineAt(curLine).text, c => {
+                return c === s;
+            }, c + 1);
+            if (c !== -1) {
+                break;
+            }
+            c = -1;
+            ++curLine;
+        }
+        return new Position(curLine, c);
+    }
+
+    private getPrev(doc: TextDocument, pos: Position, s: string) {
+        let curLine = pos.line;
+        let c = pos.character;
+        while (curLine >= 0) {
+            if (c) {
+                c = _.findLastIndex(doc.lineAt(curLine).text, c => {
+                    return c === s;
+                }, c - 1);
+                if (c !== -1) {
+                    break;
+                }
+            }
+            c = -1;
+            --curLine;
+        }
+        return new Position(curLine, c);
+    }
+
+    public deactive() {
+        this.posHistory = [];
+        emacs.updateStatusBar('');
+    }
+
+}
+
+@registerGlobalCommand
+class FakeIsearchForward extends FakeSearch {
+    name = 'C-s';
+}
+
+@registerGlobalCommand
+class FakeISearchBackWard extends FakeSearch {
+    name = 'C-r';
+    increase = false;
 }

@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { SSL_OP_ALL } from "constants";
 
 export let wordSeparators = getWordSeparators();
 

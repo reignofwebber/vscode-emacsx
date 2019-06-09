@@ -105,6 +105,7 @@ class Repeat extends Command {
             this.run();
             return true;
         } else {
+            this.stayActive = false;
             return false;
         }
     }

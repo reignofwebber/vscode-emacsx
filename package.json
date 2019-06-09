@@ -173,6 +173,11 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "C-r",
+				"key": "ctrl+r",
+				"when": "editorTextFocus"
+			},			
+			{
 				"command": "C-;",
 				"key": "ctrl+;",
 				"when": "editorTextFocus"
@@ -196,7 +201,58 @@
 				"command": "M-\\",
 				"key": "alt+\\",
 				"when": "editorTextFocus"
-			},								
+			},			
+			{
+				"command": "M-j",
+				"key": "alt+j",
+				"when": "editorTextFocus"
+			},	
+			{
+				"command": "M-S-n",
+				"key": "alt+shift+n",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-S-p",
+				"key": "alt+shift+p",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-S-n",
+				"key": "ctrl+shift+n",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-S-p",
+				"key": "ctrl+shift+p",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "C-h",
+				"key": "ctrl+h",
+				"when": "editorTextFocus"
+			},			
+			{
+				"command": "M-h",
+				"key": "alt+h",
+				"when": "editorTextFocus"
+			},			
+			{
+				"command": "M-x",
+				"key": "alt+x",
+				"when": ""
+			},			
+			{
+				"command": "C-M-f",
+				"key": "ctrl+alt+f",
+				"when": ""
+			},						
+			{
+				"command": "Del",
+				"key": "backspace",
+				"when": "editorTextFocus"
+			},					
+
 			{
 				"command": "M-[",
 				"key": "alt+[",

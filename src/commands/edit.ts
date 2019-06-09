@@ -249,6 +249,18 @@ class NewLineMayBeIndent extends EditCommand {
 }
 
 @registerGlobalCommand
+class IndentNewCommentLine extends EditCommand {
+    name = 'M-j';
+    public editRun(doc: TextDocument, pos: Position): void {
+        runNativeCommand('default:type', {
+            text: '\n'
+        }).then(() => {
+            runNativeCommand('editor.action.commentLine');
+        });
+    }
+}
+
+@registerGlobalCommand
 class OpenLine extends EditCommand {
     name = "C-o";
     public editRun(doc: TextDocument, pos: Position): void {

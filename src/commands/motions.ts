@@ -200,14 +200,14 @@ class EndOfBuffer extends MotionCommand {
 // FIXME
 @registerGlobalCommand
 class MoveToWindowLineTopBottom extends MotionExtCommand {
-    name = "M-r";
+    name = "M-l";
     private curPos: "center" | "top" | "bottom" = "bottom";
     public motionRun(editor: TextEditor): Position {
         let line = 0;
         let range0 = editor.visibleRanges[0];
 
         let c = emacs.commandRing.back();
-        if (!(c && c.name === 'M-r')) {
+        if (!(c && c.name === this.name)) {
             this.curPos = "bottom";
         }
 
@@ -295,6 +295,15 @@ class BackToIndentation extends MotionCommand {
         });
         return new Position(pos.line, c === -1 ? 0 : c);
     }    
+}
+
+@registerGlobalCommand
+class GoToLine extends Command {
+    name = 'M-g g';
+    public run(): void {
+        emacs.markRing.push(emacs.editor.pos);
+        runNativeCommand('workbench.action.gotoLine');
+    }
 }
 
 
@@ -406,11 +415,11 @@ class FakeSearch extends Command {
 
 @registerGlobalCommand
 class FakeIsearchForward extends FakeSearch {
-    name = 'C-s';
+    name = 'M-s';
 }
 
 @registerGlobalCommand
 class FakeISearchBackWard extends FakeSearch {
-    name = 'C-r';
+    name = 'M-r';
     increase = false;
 }

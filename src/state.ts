@@ -109,6 +109,10 @@ class Ring<T> {
         return this._data[this._curPos];
     }
 
+    public resetCursor() {
+        this._curPos = this._data.length - 1;
+    }
+
     public back(): T | null {
         if (this._data.length === 0) {
             return null;
@@ -328,9 +332,7 @@ class Emacs {
     }
 
     set isReadOnly(is: boolean) {
-        this._readonly = is;
     }
-
     get markRing() {
         return this._markRing;
     }
@@ -386,7 +388,7 @@ class Emacs {
 
     public updateStatusBar(str: string, joinCommand: boolean = false) {
         if (joinCommand) {
-            let text = this._statusItem.text;
+            let text = this._statusItem.text || '';
             if (text.indexOf('-') !== -1) {
                 text = text.replace(/-$/, ` ${str}-`);
                 this._statusItem.text = text;

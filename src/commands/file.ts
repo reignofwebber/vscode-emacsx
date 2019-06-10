@@ -64,19 +64,3 @@ class CommentLine extends Command {
         runNativeCommand('editor.action.commentLine');
     }
 }
-
-@registerGlobalCommand
-class SelectNextSuggestion extends Command {
-    name = 'M-n';
-    public run(): void {
-        runNativeCommand('selectNextSuggestion');
-    }
-}
-
-@registerGlobalCommand
-class SelectPrevSuggestion extends Command {
-    name = 'M-p';
-    public run(): void {
-        runNativeCommand('selectPrevSuggestion');
-    }
-}

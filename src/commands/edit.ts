@@ -30,7 +30,7 @@ class EditCommand extends Command {
 
     }
 
-    public insert(pos: Position, text: string, callback: () => void) {
+    public insert(pos: Position, text: string, callback?: () => void) {
         let editor = emacs.editor.ed;
 
         if (editor) {
@@ -204,6 +204,10 @@ class YankPop extends EditCommand {
             emacs.updateStatusBar('Previous commond was not a yank');
         }
     }
+
+    public deactive() {
+        emacs.killRing.resetCursor();
+    }
 }
 
 @registerGlobalCommand
@@ -241,6 +245,16 @@ class BackwardKillWord extends EditCommand {
 @registerGlobalCommand
 class NewLineMayBeIndent extends EditCommand {
     name = "C-j";
+    public editRun(doc: TextDocument, pos: Position): void {
+        runNativeCommand('C-e').then(() => {
+            runNativeCommand('C-m');
+        })
+    }
+}
+
+@registerGlobalCommand
+class NewLine extends EditCommand {
+    name = 'C-m';
     public editRun(doc: TextDocument, pos: Position): void {
         runNativeCommand('default:type', {
             text: '\n'

@@ -38,14 +38,17 @@ export function activate(context: vscode.ExtensionContext) {
 		key: string;
 		mac?: string;
 		linux?: string;
+		native?: boolean;
 		command: string;
 		when: string;
 	}
 
 	for (let keybinding of packagejson.contributes.keybindings) {
-		context.subscriptions.push(vscode.commands.registerCommand(keybinding.command, () => {
-			emacs.command.push(keybinding.command);
-		}));
+		if (!keybinding.native) {
+			context.subscriptions.push(vscode.commands.registerCommand(keybinding.command, () => {
+				emacs.command.push(keybinding.command);
+			}));
+		}
 	}
 	context.subscriptions.push(vscode.commands.registerCommand("type", (arg) => {
 		emacs.command.push(arg.text);

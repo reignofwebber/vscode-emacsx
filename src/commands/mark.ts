@@ -17,7 +17,7 @@ class MarkCommand extends Command {
             // TODO rolling a number
             let pos = emacs.markRing.rolling();
             if (pos) {
-                emacs.setCurrentPosition(pos);
+                emacs.setCurrentPosition(pos, true);
             }
         } else {
             emacs.toggleMark();

@@ -68,8 +68,8 @@
 				"when": "editorTextFocus"
 			},
 			{
-				"command": "M-r",
-				"key": "alt+r",
+				"command": "M-l",
+				"key": "alt+l",
 				"when": "editorTextFocus"
 			},
 			{
@@ -133,6 +133,16 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "C-m",
+				"key": "ctrl+m",
+				"when": "editorTextFocus"
+			},			
+			{
+				"command": "M-g",
+				"key": "alt+g",
+				"when": "editorTextFocus"
+			},						
+			{
 				"command": "C-o",
 				"key": "ctrl+o",
 				"when": "editorTextFocus"
@@ -150,11 +160,6 @@
 			{
 				"command": "C-g",
 				"key": "ctrl+g",
-				"when": "editorTextFocus"
-			},
-			{
-				"command": "C-x",
-				"key": "ctrl+x",
 				"when": "editorTextFocus"
 			},
 			{
@@ -177,6 +182,16 @@
 				"key": "ctrl+r",
 				"when": "editorTextFocus"
 			},			
+			{
+				"command": "M-s",
+				"key": "alt+s",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "M-r",
+				"key": "alt+r",
+				"when": "editorTextFocus"
+			},						
 			{
 				"command": "C-;",
 				"key": "ctrl+;",
@@ -208,71 +223,90 @@
 				"when": "editorTextFocus"
 			},	
 			{
-				"command": "M-S-n",
-				"key": "alt+shift+n",
-				"when": "editorTextFocus"
-			},
-			{
-				"command": "M-S-p",
-				"key": "alt+shift+p",
-				"when": "editorTextFocus"
-			},
-			{
-				"command": "C-S-n",
-				"key": "ctrl+shift+n",
-				"when": "editorTextFocus"
-			},
-			{
-				"command": "C-S-p",
-				"key": "ctrl+shift+p",
-				"when": "editorTextFocus"
-			},
-			{
-				"command": "C-h",
-				"key": "ctrl+h",
-				"when": "editorTextFocus"
-			},			
-			{
-				"command": "M-h",
-				"key": "alt+h",
-				"when": "editorTextFocus"
-			},			
-			{
-				"command": "M-x",
-				"key": "alt+x",
-				"when": ""
-			},			
-			{
-				"command": "C-M-f",
-				"key": "ctrl+alt+f",
-				"when": ""
-			},						
-			{
 				"command": "Del",
 				"key": "backspace",
 				"when": "editorTextFocus"
 			},					
+			{
+				"command": "C-x",
+				"key": "ctrl+x",
+				"when": ""
+			},
+			{
+				"native": true,
+				"command": "workbench.action.showCommands",
+				"key": "alt+x"
+			},
+			{
+				"native": true,
+				"command": "workbench.action.nextEditor",
+				"key": "alt+]"
+			},
+			{
+				"native": true,
+				"command": "workbench.action.previousEditor",
+				"key": "alt+["
+			},
+			{
+				"native": true,
+				"command": "actions.find",
+				"key": "ctrl+alt+f"
+			},			
+			{
+				"native": true,
+				"command": "editor.action.smartSelect.expand",
+				"key": "ctrl+h",
+				"when": "editorTextFocus"
+			},			
+			{
+				"native": true,
+				"command": "editor.action.smartSelect.shrink",
+				"key": "alt+h",
+				"when": "editorTextFocus"
+			},						
+			{
+				"native": true,
+				"command": "editor.action.moveLinesDownAction",
+				"key": "ctrl+shift+n",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"native": true,
+				"command": "editor.action.moveLinesUpAction",
+				"key": "ctrl+shift+p",
+				"when": "editorTextFocus && !editorReadonly"
+			},			
+			{
+				"native": true,
+				"command": "editor.action.copyLinesDownAction",
+				"key": "alt+shift+n",
+				"when": "editorTextFocus && !editorReadonly"
+			},
+			{
+				"native": true,
+				"command": "editor.action.copyLinesUpAction",
+				"key": "alt+shift+p",
+				"when": "editorTextFocus && !editorReadonly"
+			},						
+			{
+				"native": true,
+				"command": "selectNextSuggestion",
+				"key": "ctrl+n",
+				"when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
+			},			
+			{
+				"native": true,
+				"command": "selectPrevSuggestion",
+				"key": "ctrl+p",
+				"when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
+			},
+			{
+				"native": true,
+				"command": "editor.action.triggerSuggest",
+				"key": "alt+'",
+				"when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly"
+			},			
 
-			{
-				"command": "M-[",
-				"key": "alt+[",
-				"when": ""
-			},
-			{
-				"command": "M-]",
-				"key": "alt+]",
-				"when": ""
-			},
-			{
-				"command": "M-n",
-				"key": "alt+n",
-				"when": ""
-			},
-			{
-				"command": "M-p",
-				"key": "alt+p",
-				"when": ""
-			},
 			{
 				"command": "C-Spc",
 				"key": "ctrl+space",

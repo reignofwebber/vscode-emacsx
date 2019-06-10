@@ -5,7 +5,7 @@ import { runNativeCommand } from "../runner";
 export enum Mode {
     Global,
     Fundemental
-};
+}
 
 type KeyBinding = {
     [key: string]: Command
@@ -29,7 +29,7 @@ export enum RepeatType {
     Accept,
     // not support repeat
     Reject,
-};
+}
 
 
 export interface ICommand {
@@ -63,8 +63,8 @@ export class Command {
 
     get isActive() {
         return this._state;
-    } 
-    
+    }
+
     public active(...arg: any[]): void {
         this._state = true;
         if (this.runCheck(...arg)) {
@@ -108,7 +108,7 @@ export class Command {
     }
 
     /**
-     * clean 
+     * clean
      */
     public deactive() {
 
@@ -150,4 +150,3 @@ class DeleteLeft extends Command {
         runNativeCommand('deleteLeft');
     }
 }
-

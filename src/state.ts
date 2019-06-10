@@ -166,10 +166,12 @@ export class CommandContainer {
         }
         // quit active
         if ('C-g' === command) {
-            if (run) this.c_quit.active();
+            if (run) {
+                this.c_quit.active();
+            }
             return {
                 command: this.c_quit
-            }
+            };
         }
         // find command
         this._list.push(command);
@@ -179,7 +181,9 @@ export class CommandContainer {
         // find a command
         if (c) {
             this.clear();
-            if (run) c.active();
+            if (run) {
+                c.active();
+            }
             this._curCommand = c;
             return {
                 command: c
@@ -187,11 +191,13 @@ export class CommandContainer {
         // type active
         } else if (this.isText(cName)) {
             this.clear();
-            if (run) this.c_type.active(cName);
+            if (run) {
+                this.c_type.active(cName);
+            }
             return {
                 command: this.c_type,
                 arg: cName
-            }
+            };
         // command is undefined
         } else if (!this.isPrefix(cName)) {
             this.clear();
@@ -389,43 +395,24 @@ class Emacs {
 
 
     public updateStatusBar(str: string, joinCommand: boolean = false) {
+        let text = this._statusItem.text || '';
         if (joinCommand) {
-            let text = this._statusItem.text || '';
             if (text.indexOf('-') !== -1) {
                 text = text.replace(/-$/, ` ${str}-`);
-                this._statusItem.text = text;
             } else {
-                this._statusItem.text = (str + '-');
+                text = str + '-';
             }
         } else {
-            this._statusItem.text = str;
+            text = str;
         }
+
+        this._statusItem.text = 'emacs: ' + text;
 
         this._statusItem.show();
     }
 
     public appendStatus(str: string) {
         this._statusItem.text = this._statusItem.text + ' ' + str;
-    }
-
-    public type(char: string): boolean {
-        // let c = this.command.push(char);
-        // if (c.state === CommandState.Well) {
-        //     c.command!.active();
-        //     this.traceCommand(c.command);
-        //     return true;
-        // } else if (c.state === CommandState.InCompete) {
-        //     return true;
-        // } else if (this._readonly) {
-        //     return true;
-        // } else {
-        //     if (this._mark) {
-        //         this.setMark(false);
-        //         this.setCurrentPosition();
-        //     }
-        //     return false;
-        // }
-        return false;
     }
 
     public traceCommand(command: Command): void {

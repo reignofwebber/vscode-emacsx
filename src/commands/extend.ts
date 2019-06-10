@@ -36,6 +36,14 @@ class CodeSplitEditor extends Command {
 }
 
 @registerGlobalCommand
+class CodeToggleEditorGroupLayout extends Command {
+    name = 'C-x 4';
+    public run(): void {
+        runNativeCommand('workbench.action.toggleEditorGroupLayout');
+    }
+}
+
+@registerGlobalCommand
 class CodeFocusNextEditorGroup extends Command {
     name = 'C-x o';
     public run(): void {

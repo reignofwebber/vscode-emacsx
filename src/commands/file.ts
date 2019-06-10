@@ -26,7 +26,7 @@ class CodeSaveAllFiles extends Command {
     name = 'C-x s';
     public run(): void {
         runNativeCommand('workbench.action.files.saveAll');
-    }   
+    }
 }
 
 @registerGlobalCommand
@@ -40,7 +40,7 @@ class KillBuffer extends Command {
 @registerGlobalCommand
 class SaveBuffersKillTerminal extends Command {
     name = 'C-x C-c';
-    repeatType = RepeatType.Reject;    
+    repeatType = RepeatType.Reject;
     public run(): void {
         runNativeCommand('workbench.action.quit');
     }
@@ -59,8 +59,18 @@ class ToggleZenMode extends Command {
 class CommentLine extends Command {
     name = 'C-x C-;';
     change = true;
-    repeatType = RepeatType.Reject;    
+    repeatType = RepeatType.Reject;
     public run(): void {
         runNativeCommand('editor.action.commentLine');
+    }
+}
+
+@registerGlobalCommand
+class CommentBlock extends Command {
+    name = 'C-x ;';
+    change = true;
+    repeatType = RepeatType.Reject;
+    public run(): void {
+        runNativeCommand('editor.action.blockComment');
     }
 }

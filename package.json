@@ -136,12 +136,12 @@
 				"command": "C-m",
 				"key": "ctrl+m",
 				"when": "editorTextFocus"
-			},			
+			},
 			{
 				"command": "M-g",
 				"key": "alt+g",
 				"when": "editorTextFocus"
-			},						
+			},
 			{
 				"command": "C-o",
 				"key": "ctrl+o",
@@ -181,7 +181,7 @@
 				"command": "C-r",
 				"key": "ctrl+r",
 				"when": "editorTextFocus"
-			},			
+			},
 			{
 				"command": "M-s",
 				"key": "alt+s",
@@ -191,7 +191,7 @@
 				"command": "M-r",
 				"key": "alt+r",
 				"when": "editorTextFocus"
-			},						
+			},
 			{
 				"command": "C-;",
 				"key": "ctrl+;",
@@ -206,31 +206,36 @@
 				"command": "C-q",
 				"key": "ctrl+q",
 				"when": "editorTextFocus"
-			},			
+			},
 			{
 				"command": "M-m",
 				"key": "alt+m",
 				"when": "editorTextFocus"
-			},						
+			},
 			{
 				"command": "M-\\",
 				"key": "alt+\\",
 				"when": "editorTextFocus"
-			},			
+			},
 			{
 				"command": "M-j",
 				"key": "alt+j",
 				"when": "editorTextFocus"
-			},	
+			},
 			{
 				"command": "__Del__",
 				"key": "backspace",
 				"when": "editorTextFocus"
-			},					
+			},
 			{
 				"command": "C-x",
 				"key": "ctrl+x",
 				"when": ""
+			},
+			{
+				"command": "C-Spc",
+				"key": "ctrl+space",
+				"when": "editorTextFocus"
 			},
 			{
 				"native": true,
@@ -249,21 +254,45 @@
 			},
 			{
 				"native": true,
+				"command": "workbench.action.nextPanelView",
+				"key": "alt+]",
+				"when": "panelFocus"
+			},
+			{
+				"native": true,
+				"command": "workbench.action.previousPanelView",
+				"key": "alt+[",
+				"when": "panelFocus"
+			},
+			{
+				"native": true,
+				"command": "workbench.action.nextSideBarView",
+				"key": "alt+]",
+				"when": "sideBarFocus"
+			},
+			{
+				"native": true,
+				"command": "workbench.action.previousSideBarView",
+				"key": "alt+[",
+				"when": "sideBarFocus"
+			},
+			{
+				"native": true,
 				"command": "actions.find",
 				"key": "ctrl+alt+f"
-			},			
+			},
 			{
 				"native": true,
 				"command": "editor.action.smartSelect.expand",
 				"key": "ctrl+h",
 				"when": "editorTextFocus"
-			},			
+			},
 			{
 				"native": true,
 				"command": "editor.action.smartSelect.shrink",
 				"key": "alt+h",
 				"when": "editorTextFocus"
-			},						
+			},
 			{
 				"native": true,
 				"command": "editor.action.moveLinesDownAction",
@@ -275,7 +304,7 @@
 				"command": "editor.action.moveLinesUpAction",
 				"key": "ctrl+shift+p",
 				"when": "editorTextFocus && !editorReadonly"
-			},			
+			},
 			{
 				"native": true,
 				"command": "editor.action.copyLinesDownAction",
@@ -287,13 +316,13 @@
 				"command": "editor.action.copyLinesUpAction",
 				"key": "alt+shift+p",
 				"when": "editorTextFocus && !editorReadonly"
-			},						
+			},
 			{
 				"native": true,
 				"command": "selectNextSuggestion",
 				"key": "ctrl+n",
 				"when": "suggestWidgetMultipleSuggestions && suggestWidgetVisible && textInputFocus"
-			},			
+			},
 			{
 				"native": true,
 				"command": "selectPrevSuggestion",
@@ -305,12 +334,6 @@
 				"command": "editor.action.triggerSuggest",
 				"key": "alt+'",
 				"when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly"
-			},			
-
-			{
-				"command": "C-Spc",
-				"key": "ctrl+space",
-				"when": "editorTextFocus"
 			}
 		],
 		"configuration": [

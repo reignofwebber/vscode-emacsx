@@ -316,12 +316,12 @@ class DeleteHorizontalSpace extends EditCommand {
         let c = _.findLastIndex(doc.lineAt(pos.line).text, c => {
             return ' \t'.indexOf(c) === -1;
         }, pos.character - 1) + 1;
-        
+
         // no space to trim
         if (c === pos.character) {
             return;
         }
-        
+
         this.delete(new Range(new Position(pos.line, c), pos), false);
     }
 }
@@ -330,6 +330,7 @@ class DeleteHorizontalSpace extends EditCommand {
 @registerGlobalCommand
 class KillRectangle extends EditCommand {
     name = "C-x r k";
+    del = true;
     public editRun(doc: TextDocument, pos: Position) {
         let corner = emacs.markRing.back();
         if (!corner) {
@@ -358,9 +359,16 @@ class KillRectangle extends EditCommand {
             rs.push(r);
         }
         emacs.rectangleRing.push(new RectangleText(s));
-        
-        this.deleteRanges(rs);
+        if (this.del) {
+            this.deleteRanges(rs);
+        }
     }
+}
+
+@registerGlobalCommand
+class CopyRectangleAsKill extends KillRectangle {
+    name = 'C-x r w';
+    del = false;
 }
 
 @registerGlobalCommand
@@ -395,10 +403,10 @@ class YankRectangle extends EditCommand {
             if (chPerLine > chCount) {
                 s = ' '.repeat(chPerLine - chCount) + s;
                 insertPos = new Position(line, chCount);
-                endPos = new Position(line, chCount + s.length);                
+                endPos = new Position(line, chCount + s.length);
             } else {
                 insertPos = new Position(line, chPerLine);
-                endPos = new Position(line, chPerLine + s.length);                
+                endPos = new Position(line, chPerLine + s.length);
             }
             // yank
             await editor.edit(editBuilder => {

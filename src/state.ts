@@ -84,11 +84,6 @@ class Ring<T> {
     }
 
     public push(t: T) {
-        // FIXME
-        // if (t === '') {
-        //     return;
-        // }
-
         if (this._data.length >= this._capability) {
             this._data.shift();
         }
@@ -160,9 +155,9 @@ export class CommandContainer {
     }
 
     /**
-     * 
-     * @param command 
-     * @param get get command without active it. 
+     *
+     * @param command
+     * @param get get command without active it.
      */
     public push(command: string, run: boolean = true): "undefined" | "incomplete" | ICommand {
         // if last command is active
@@ -175,7 +170,7 @@ export class CommandContainer {
             return {
                 command: this.c_quit
             }
-        }        
+        }
         // find command
         this._list.push(command);
         let cName = this._list.join(' ');
@@ -190,8 +185,8 @@ export class CommandContainer {
                 command: c
             };
         // type active
-        } else if (cName.length === 1) {
-            this.clear();            
+        } else if (this.isText(cName)) {
+            this.clear();
             if (run) this.c_type.active(cName);
             return {
                 command: this.c_type,
@@ -225,6 +220,13 @@ export class CommandContainer {
                 return true;
             }
 
+        }
+        return false;
+    }
+    // FIXME?
+    private isText(key: string): boolean {
+        if (!/(C-|M-|__).*/.exec(key)) {
+            return true;
         }
         return false;
     }
@@ -290,7 +292,7 @@ class Emacs {
 
     // status bar
     private _statusItem: vscode.StatusBarItem;
-    // readonly 
+    // readonly
     private _readonly: boolean;
 
 
@@ -427,7 +429,7 @@ class Emacs {
     }
 
     public traceCommand(command: Command): void {
-        this._commandRing.push(command);        
+        this._commandRing.push(command);
     }
 
     public toggleMark(): void {

@@ -223,7 +223,7 @@
 				"when": "editorTextFocus"
 			},	
 			{
-				"command": "Del",
+				"command": "__Del__",
 				"key": "backspace",
 				"when": "editorTextFocus"
 			},					

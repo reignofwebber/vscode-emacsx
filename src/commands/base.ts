@@ -144,7 +144,7 @@ class DefaultType extends Command {
 
 @registerGlobalCommand
 class DeleteLeft extends Command {
-    name = 'Del';
+    name = '__Del__';
     change = true;
     public run(c: string): void {
         runNativeCommand('deleteLeft');

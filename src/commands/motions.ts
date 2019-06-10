@@ -224,9 +224,6 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
         return new Position(line, 0);
     }
 
-    public interrupt() {
-        this.curPos = "bottom";
-    }
 }
 
 @registerGlobalCommand
@@ -294,7 +291,7 @@ class BackToIndentation extends MotionCommand {
             return ' \t'.indexOf(c) === -1;
         });
         return new Position(pos.line, c === -1 ? 0 : c);
-    }    
+    }
 }
 
 @registerGlobalCommand
@@ -347,7 +344,7 @@ class FakeSearch extends Command {
             });
             emacs.updateStatusBar(( this.increase ? 'FakeIsearch: ' : 'FakeIsearch backward: ') + this.getHistoryStr());
             return true;
-        } else if (s === 'Del') {
+        } else if (s === '__Del__') {
             // don't pop initial position
             if (this.posHistory.length === 1) {
                 return true;

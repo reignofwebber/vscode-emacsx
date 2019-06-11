@@ -197,11 +197,22 @@ class EndOfBuffer extends MotionCommand {
         return new Position(endLineIndex, endChIndex);
     }
 }
+
 // FIXME
 @registerGlobalCommand
 class MoveToWindowLineTopBottom extends MotionExtCommand {
     name = "M-l";
+    private _t: number = 0;
+    private _c: number = 0;
+    private _b: number = 0;
+
+    private _stack: {
+        t: number;
+        b: number;
+    }[] = [];
+
     private curPos: "center" | "top" | "bottom" = "bottom";
+
     public motionRun(editor: TextEditor): Position {
         let line = 0;
         let range0 = editor.visibleRanges[0];
@@ -221,9 +232,73 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
             line = range0.end.line;
             this.curPos = "bottom";
         }
+
+        this._t = range0.start.line;
+        this._c = Math.floor((range0.start.line + range0.end.line) / 2);
+        this._b = range0.end.line;
+
+        this.stayActive = true;
         return new Position(line, 0);
     }
 
+    public push(s: string):boolean {
+        if (s === 'k') {
+            this.curPos = "bottom";
+            let record = {
+                t: this._t,
+                b: this._b
+            };
+
+            let last = this._stack[this._stack.length - 1];
+            if (!last || !(last.b === record.b && last.t === record.t)) {
+                this._stack.push(record);
+            }
+
+            this._b = this._c;
+            this._c = Math.floor((this._b + this._t) / 2);
+
+            emacs.setCurrentPosition(new Position(this._c, 0));
+        } else if (s === 'j') {
+            this.curPos = "bottom";
+            let record = {
+                t: this._t,
+                b: this._b
+            };
+
+            let last = this._stack[this._stack.length - 1];
+            if (!last || !(Math.floor((last.b + last.t) / 2) === Math.floor((record.b + record.t) / 2))) {
+                this._stack.push(record);
+            }
+
+            this._t = this._c;
+            this._c = Math.floor((this._b + this._t) / 2);
+
+            emacs.setCurrentPosition(new Position(this._c, 0));
+        } else if (s === 'l') {
+            this.curPos = "bottom";
+            if (this._stack.length > 0) {
+                let last = this._stack.pop();
+                // if current pos === last pos, then pop until not equals the current pos
+                while (emacs.editor.pos.line === Math.floor((last!.b + last!.t) / 2)) {
+                    last = this._stack.pop();
+                }
+
+                this._b = last!.b;
+                this._t = last!.t;
+                this._c = Math.floor((this._b + this._t) / 2);
+                emacs.setCurrentPosition(new Position(this._c, 0));
+            }
+
+        } else {
+            this.stayActive = false;
+            return false;
+        }
+        return true;
+    }
+
+    public deactive() {
+        this._stack = [];
+    }
 }
 
 @registerGlobalCommand
@@ -365,7 +440,7 @@ class FakeSearch extends Command {
         let str = '';
         this.posHistory.forEach(v => {
             str += (' ' + v.s);
-        })
+        });
         return str;
     }
 

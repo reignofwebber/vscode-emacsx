@@ -88,7 +88,7 @@ class Ring<T> {
             this._data.shift();
         }
         this._data.push(t);
-        this._curPos = this._data.length - 1;
+        this._curPos = this._data.length;
     }
 
     // TODO rolling number

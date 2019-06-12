@@ -191,18 +191,37 @@ class Yank extends EditCommand {
 @registerGlobalCommand
 class YankPop extends EditCommand {
     name = "M-y";
+
+    private replaceYank() {
+        let text = emacs.killRing.rolling();
+        if (text) {
+            this.replace(emacs.yankRange, text);
+        }
+    }
+
     public editRun(doc: TextDocument, pos: Position): void {
         let c = emacs.commandRing.back();
-        if (c && (c.name === 'C-y' || c.name === 'M-y')) {
-            let text = emacs.killRing.rolling();
-            if (text) {
-                this.replace(emacs.yankRange, text);
-            }
+        if (c && c.name === 'C-y') {
+            // roll to pass the back string.
+            emacs.killRing.rolling();
+            this.replaceYank();
             this._trace = true;
+            this.stayActive = true;
         } else {
             this._trace = false;
             emacs.updateStatusBar('Previous commond was not a yank');
         }
+    }
+
+    public push(s: string): boolean {
+        if (s === this.name) {
+            this.replaceYank();
+            return true;
+        } else {
+            this.stayActive = false;
+            return false;
+        }
+
     }
 
     public deactive() {

@@ -211,9 +211,9 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
         b: number;
     }[] = [];
 
-    private curPos: "center" | "top" | "bottom" = "bottom";
+    protected curPos: "center" | "top" | "bottom" = "bottom";
 
-    public motionRun(editor: TextEditor): Position {
+    public motionRun(editor: TextEditor): Position | undefined {
         let line = 0;
         let range0 = editor.visibleRanges[0];
 
@@ -233,12 +233,17 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
             this.curPos = "bottom";
         }
 
+        this.setTopBottom(editor);
+        this.stayActive = true;
+        return new Position(line, 0);
+    }
+
+    protected setTopBottom(editor: TextEditor) {
+        let range0 = editor.visibleRanges[0];
+
         this._t = range0.start.line;
         this._c = Math.floor((range0.start.line + range0.end.line) / 2);
         this._b = range0.end.line;
-
-        this.stayActive = true;
-        return new Position(line, 0);
     }
 
     public push(s: string):boolean {
@@ -335,10 +340,11 @@ class ScrollUpCommand extends MotionExtCommand {
 }
 
 @registerGlobalCommand
-class RecenterTopBottom extends MotionCommand {
+class RecenterTopBottom extends MoveToWindowLineTopBottom {
     name = "C-l";
-    private curPos: "center" | "top" | "bottom" = "bottom";
-    public motionRun(doc: TextDocument, pos: Position): Position | undefined {
+
+    public motionRun(editor: TextEditor): Position | undefined {
+        let pos = emacs.editor.pos;
         let c = emacs.commandRing.back();
         if (!(c && c.name === 'C-l')) {
             this.curPos = "bottom";
@@ -354,8 +360,12 @@ class RecenterTopBottom extends MotionCommand {
             "lineNumber": pos.line,
             "at": this.curPos
         });
+
+        this.setTopBottom(editor);
+        this.stayActive = true;
         return;
     }
+
 }
 
 @registerGlobalCommand

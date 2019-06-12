@@ -1,4 +1,4 @@
-import {TextDocument, Position, TextEditor, TextEditorCursorStyle} from "vscode";
+import {TextDocument, Position, TextEditor, TextEditorCursorStyle } from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
 import { wordSeparators } from "../configure";
@@ -494,4 +494,145 @@ class FakeIsearchForward extends FakeSearch {
 class FakeISearchBackWard extends FakeSearch {
     name = 'M-r';
     increase = false;
+}
+
+
+class ISearch extends MotionCommand {
+    private readonly _statusMarkSaveHint: string;
+
+    private _statusHint: string;
+
+    private _searchStr: string;
+    private _searchStartPos: Position;
+    private _curPos: Position;
+    protected increase: boolean;
+
+    constructor() {
+        super();
+        this._statusHint = 'I-search: ';
+        this._statusMarkSaveHint = 'Mark saved where search started';
+
+        this._searchStr = '';
+        this._searchStartPos = new Position(0, 0);
+        this._curPos = new Position(0, 0);
+        this.increase = true;
+    }
+
+    public motionRun(doc: TextDocument, pos: Position):Position | undefined {
+        this.stayActive = true;
+        this._curPos = this._searchStartPos = pos;
+        this._statusHint = this.increase ? 'I-search: ' : 'I-search backward: ';
+        emacs.updateStatusBar(this._statusHint + this._searchStr);
+        return;
+    }
+
+    public push(s: string): boolean {
+        // is char
+        if (/^[\x00-\x7f]$/.exec(s)) {
+            this._searchStr += s;
+            emacs.updateStatusBar(this._statusHint + this._searchStr);
+            this.increase ? this.getNext(true) : this.getPrev(true);
+            emacs.setCurrentPosition(this._curPos, true);
+        } else if (s === '__Del__') {
+            this._searchStr = this._searchStr.substr(0, this._searchStr.length - 1);
+            emacs.updateStatusBar(this._statusHint + this._searchStr);
+            this.increase ? this.getNext(true) : this.getPrev(true);
+            emacs.setCurrentPosition(this._curPos, true);
+        } else if (s === 'C-s') {
+            this.increase = true;
+            this._statusHint = 'I-search: ';
+            emacs.updateStatusBar(this._statusHint + this._searchStr);
+            this.getNext();
+            emacs.setCurrentPosition(this._curPos, true);
+        } else if (s === 'C-r') {
+            this.increase = false;
+            this._statusHint = 'I-search backward: ';
+            emacs.updateStatusBar(this._statusHint + this._searchStr);
+            this.getPrev();
+            emacs.setCurrentPosition(this._curPos, true);
+        } else {
+            this.stayActive = false;
+            if (this._searchStartPos !== emacs.editor.pos) {
+                emacs.markRing.push(this._searchStartPos);
+
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private getNext(research: boolean = false) {
+        // if searchStr is null, return start pos.
+        if (this._searchStr.length === 0) {
+            return this._searchStartPos;
+        }
+
+        let doc = emacs.editor.doc;
+        if (!doc) {
+            return this._searchStartPos;
+        }
+        let nextPos = research ? logic.getNextPos(doc, this._searchStartPos) : logic.getNextPos(doc, this._curPos);
+        let curLine = nextPos.line;
+        let curC = nextPos.character;
+        while (curLine <= doc.lineCount - 1) {
+            let str = doc.lineAt(curLine).text.substr(curC);
+            let idx = str.indexOf(this._searchStr);
+            if (idx !== -1) {
+                this._curPos = new Position(curLine, curC + idx);
+                return;
+            }
+            curC = 0;
+            ++curLine;
+        }
+        emacs.updateStatusBar('Failing I-search: ' + this._searchStr);
+    }
+
+    private getPrev(research: boolean = false) {
+        // if searchStr is null, return start pos.
+        if (this._searchStr.length === 0) {
+            return this._searchStartPos;
+        }
+
+        let doc = emacs.editor.doc;
+        if (!doc) {
+            return this._searchStartPos;
+        }
+        let prevPos = research ? logic.getPrevPos(doc, this._searchStartPos) : logic.getPrevPos(doc, this._curPos);
+        let curLine = prevPos.line;
+        let curC: number | undefined = prevPos.character;
+        while (curLine >= 0) {
+            let str = doc.lineAt(curLine).text.substr(0, curC);
+            let idx = str.indexOf(this._searchStr);
+            if (idx !== -1) {
+                this._curPos = new Position(curLine, idx);
+                return;
+            }
+            curC = undefined;
+            --curLine;
+        }
+        emacs.updateStatusBar('Failing I-search backward: ' + this._searchStr);
+    }
+
+    public deactive() {
+        this._searchStartPos = new Position(0, 0);
+        this._curPos = new Position(0, 0);
+    }
+}
+
+@registerGlobalCommand
+class ISearchForward extends ISearch {
+    name = 'C-s';
+    public deactive() {
+        super.deactive();
+        this.increase = true;
+    }
+}
+
+@registerGlobalCommand
+class ISearchBackWard extends ISearch {
+    name = 'C-r';
+    public deactive() {
+        super.deactive();
+        this.increase = false;
+    }
 }

@@ -123,3 +123,23 @@ export function getBackWardWordPos(doc: TextDocument, pos: Position): Position {
         return new Position(curLine, curChIndex + 1);
     }
 }
+
+export function getNextPos(doc: TextDocument, pos: Position): Position {
+    if (doc.lineAt(pos.line).text.length > pos.character) {
+        return new Position(pos.line, pos.character + 1);
+    } else if (doc.lineCount - 1 > pos.line) {
+        return new Position(pos.line + 1, 0);
+    } else {
+        return pos;
+    }
+}
+
+export function getPrevPos(doc: TextDocument, pos: Position): Position {
+    if (pos.character > 0) {
+        return new Position(pos.line, pos.character - 1);
+    } else if (pos.line > 0) {
+        return new Position(pos.line - 1, 0);
+    } else {
+        return pos;
+    }
+}

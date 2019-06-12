@@ -307,34 +307,48 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
 }
 
 @registerGlobalCommand
-class ScrollDownCommand extends MotionExtCommand {
+class ScrollDownCommand extends MoveToWindowLineTopBottom {
     name = "M-v";
     public motionRun(editor: TextEditor): Position | undefined {
+        this.runHelper(editor);
+        this.stayActive = true;
+        return;
+    }
+
+    public async runHelper(editor: TextEditor) {
         let range0 = editor.visibleRanges[0];
         if (range0.start.line === 0) {
             return;
         }
-        runNativeCommand("revealLine", {
+        await runNativeCommand("revealLine", {
             lineNumber: range0.start.line,
             at: "bottom"
         });
-        return new Position(range0.start.line, 0);
+        this.setTopBottom(editor);
+        emacs.setCurrentPosition(new Position(range0.start.line, 0));
     }
 }
 
 @registerGlobalCommand
-class ScrollUpCommand extends MotionExtCommand {
+class ScrollUpCommand extends MoveToWindowLineTopBottom {
     name = "C-v";
     public motionRun(editor: TextEditor): Position | undefined {
+        this.runHelper(editor);
+        this.stayActive = true;
+        return;
+    }
+
+    public async runHelper(editor: TextEditor) {
         let range0 = editor.visibleRanges[0];
         if (range0.end.line >= editor.document.lineCount - 1) {
             return;
         }
-        runNativeCommand("revealLine", {
+        await runNativeCommand("revealLine", {
             lineNumber: range0.end.line,
             at: "top"
         });
-        return new Position(range0.end.line, 0);
+        this.setTopBottom(editor);
+        emacs.setCurrentPosition(new Position(range0.end.line, 0));
     }
 
 }

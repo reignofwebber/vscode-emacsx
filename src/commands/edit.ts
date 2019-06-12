@@ -248,7 +248,7 @@ class NewLineMayBeIndent extends EditCommand {
     public editRun(doc: TextDocument, pos: Position): void {
         runNativeCommand('C-e').then(() => {
             runNativeCommand('C-m');
-        })
+        });
     }
 }
 

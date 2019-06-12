@@ -344,6 +344,12 @@ class RecenterTopBottom extends MoveToWindowLineTopBottom {
     name = "C-l";
 
     public motionRun(editor: TextEditor): Position | undefined {
+        this.runHelper(editor);
+        this.stayActive = true;
+        return;
+    }
+
+    public async runHelper(editor: TextEditor) {
         let pos = emacs.editor.pos;
         let c = emacs.commandRing.back();
         if (!(c && c.name === 'C-l')) {
@@ -356,14 +362,12 @@ class RecenterTopBottom extends MoveToWindowLineTopBottom {
         } else {
             this.curPos = "bottom";
         }
-        runNativeCommand("revealLine", {
+        await runNativeCommand("revealLine", {
             "lineNumber": pos.line,
             "at": this.curPos
         });
 
         this.setTopBottom(editor);
-        this.stayActive = true;
-        return;
     }
 
 }
@@ -477,7 +481,7 @@ class FakeSearch extends Command {
             if (c) {
                 c = _.findLastIndex(doc.lineAt(curLine).text, c => {
                     return c === s;
-                }, c - 1);
+                }, c === -1 ? -1 : c - 1);
                 if (c !== -1) {
                     break;
                 }
@@ -561,11 +565,11 @@ class ISearch extends MotionCommand {
             this.getPrev();
             emacs.setCurrentPosition(this._curPos, true);
         } else {
-            this.stayActive = false;
-            if (this._searchStartPos !== emacs.editor.pos) {
+            if (!(this._searchStartPos.line === emacs.editor.pos.line &&
+                this._searchStartPos.character === emacs.editor.pos.character)) {
                 emacs.markRing.push(this._searchStartPos);
-
             }
+            this.stayActive = false;
             return false;
         }
         return true;

@@ -626,6 +626,7 @@ class ISearch extends MotionCommand {
     public deactive() {
         this._searchStartPos = new Position(0, 0);
         this._curPos = new Position(0, 0);
+        this._searchStr = '';
     }
 }
 

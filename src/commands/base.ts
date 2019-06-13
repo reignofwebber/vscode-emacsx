@@ -53,7 +53,7 @@ export class Command {
     private _stayActive: boolean = false;
 
     // must override push() method to deactive command
-    protected set stayActive(s: boolean) {
+    public set stayActive(s: boolean) {
         this._stayActive = s;
         if (!s) {
             this._state = false;

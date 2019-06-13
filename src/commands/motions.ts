@@ -329,6 +329,7 @@ class ScrollDownCommand extends MoveToWindowLineTopBottom {
     }
 }
 
+// FIXME C-u, C-x z
 @registerGlobalCommand
 class ScrollUpCommand extends MoveToWindowLineTopBottom {
     name = "C-v";

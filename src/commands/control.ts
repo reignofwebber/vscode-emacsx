@@ -60,7 +60,7 @@ class UniversalArgument extends Command {
 
         } else {
             // command default repeat
-            let command = c.command;        
+            let command = c.command;
             let arg = c.arg;
             switch (command.repeatType) {
                 case RepeatType.Default:
@@ -87,6 +87,7 @@ class UniversalArgument extends Command {
     }
 }
 
+// TODO C-u && C-x z
 @registerGlobalCommand
 class Repeat extends Command {
     name = "C-x z";
@@ -95,7 +96,9 @@ class Repeat extends Command {
     public run(): void {
         let c = emacs.commandRing.back();
         if (c) {
-            c.active();
+            // without active it. ?
+            c.run();
+            c.stayActive = false;
         }
         this.stayActive = true;
     }

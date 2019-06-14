@@ -14,10 +14,7 @@ export function active() {
 class SaveBuffer extends Command {
     name = 'C-x C-s';
     public run(): void {
-        let doc = emacs.editor.doc;
-        if (doc) {
-            doc.save();
-        }
+       runNativeCommand('workbench.action.files.save');
     }
 }
 

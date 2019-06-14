@@ -114,6 +114,7 @@ class Repeat extends Command {
     }
 }
 
+// TODO
 @registerGlobalCommand
 class ReadOnlyMode extends Command {
     name = 'C-x C-q';

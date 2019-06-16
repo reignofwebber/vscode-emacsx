@@ -152,9 +152,18 @@ class KillLine extends EditCommand {
 class KillRegion extends EditCommand {
     name = "C-w";
     public editRun(doc: TextDocument, pos: Position): void {
-        if (this.selection) {
-            this.delete(this.selection, true);
+        this.runHelper(doc, pos);
+    }
+
+    private async runHelper(doc: TextDocument, pos: Position) {
+        let selection = this.selection;
+        // run native copy command
+        await runNativeCommand('editor.action.clipboardCopyAction');
+
+        if (selection) {
+            this.delete(selection, true);
         }
+
     }
 }
 
@@ -162,13 +171,15 @@ class KillRegion extends EditCommand {
 class KillRingSave extends EditCommand {
     name = "M-w";
     public editRun(doc: TextDocument, pos: Position): void {
+        // run native copy command
+        runNativeCommand('editor.action.clipboardCopyAction');
+
         if (this.selection) {
             let text = emacs.editor.text(this.selection);
             if (text.length > 0) {
                 emacs.killRing.push(text);
             }
         }
-
     }
 }
 

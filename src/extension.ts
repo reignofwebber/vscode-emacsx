@@ -25,7 +25,7 @@ export function activate(context: vscode.ExtensionContext) {
 	control.active();
 	file.active();
 	if (useExtendCommand) {
-		extend.active();
+		extend.active(context.extensionPath);
 	}
 
 	const packagejson: {

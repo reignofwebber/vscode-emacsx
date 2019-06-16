@@ -66,17 +66,17 @@ export class Command {
     }
 
     public active(...arg: any[]): void {
-        this._state = true;
         if (this.runCheck(...arg)) {
+            this._state = true;
             this.run(...arg);
-        }
-        if (!this._stayActive) {
-            this._state = false;
-            this.deactive();
-        }
+            if (!this._stayActive) {
+                this._state = false;
+                this.deactive();
+            }
 
-        if (this._trace) {
-            emacs.traceCommand(this);
+            if (this._trace) {
+                emacs.traceCommand(this);
+            }
         }
     }
 

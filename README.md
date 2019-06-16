@@ -18,7 +18,7 @@
 | `M-b`          | backward-word                  | -                   | -              |
 | `M-<`          | beginning-of-buffer            | -                   | -              |
 | `M->`          | end-of-buffer                  | -                   | -              |
-| `C-v`          | scroll-up-command              | Paste               | `ctrl+alt+v`   |
+| `C-v`          | scroll-up-command              | Paste               | `ctrl+shift+v` |
 | `M-v`          | scroll-down-command            | -                   | -              |
 | `M-m`          | back-to-indentation            | -                   | -              |
 | `M-g g`        | goto-line                      | -                   | -              |
@@ -38,7 +38,7 @@
 | ------------------ | ----------------------- | --------------------------- | -------------- |
 | `C-d`              | delete-char             | addSelectionToNextFindMatch | -              |
 | `M-d`              | kill-word               | -                           | -              |
-| `M-Del`            | backward-kill-word      | -                           | -              |
+| `M-del`            | backward-kill-word      | -                           | -              |
 | `C-k`              | kill-line               | -                           | -              |
 | `C-w`              | kill-region             | closeWindow                 | `C-x k`        |
 | `M-w`              | kill-ring-save          | toggleFindWholeWord         | -              |
@@ -69,6 +69,9 @@
 | Command   | Desc                     | Conflicted Command | Solve Conflict |
 | --------- | ------------------------ | ------------------ | -------------- |
 | `M-x`     | execute-extended-command |                    | -              |
+| `C-/`     | undo                     |                    | -              |
+| `C-?`     | redo                     |                    | -              |
+| `C-g`     | keyboard-quit            |                    | -              |
 | `C-u`     | universal-argument       | softUndo           | -              |
 | `C-x z`   | repeat                   |                    | -              |
 | `C-x C-q` | (incomplete)             |                    | -              |
@@ -85,30 +88,45 @@
 
 ### Window
 
-| Command   | Desc                                       | Conflicted Command | Solve Conflict |
-| --------- | ------------------------------------------ | ------------------ | -------------- |
-| `C-x o`   | *workbench.action.focusNextGroup*          | -                  | -              |
-| `C-x 2`   | *workbench.action.toggleEditorGroupLayout* | -                  | -              |
-| `C-x 3`   | *workbench.action.splitEditor*             | -                  | -              |
-| `C-x 4`   | *workbench.action.toggleEditorGroupLayout* | -                  | -              |
-| `C-x C-z` | *workbench.action.toggleZenMode*           | -                  | -              |
+| Command   | Desc                                       |
+| --------- | ------------------------------------------ |
+| `C-x o`   | *workbench.action.focusNextGroup*          |
+| `C-x 2`   | *workbench.action.toggleEditorGroupLayout* |
+| `C-x 3`   | *workbench.action.splitEditor*             |
+| `C-x 4`   | *workbench.action.toggleEditorGroupLayout* |
+| `C-x C-z` | *workbench.action.toggleZenMode*           |
 
 ## VSC Keymap
 
-| Command | Desc                              |
-| ------- | --------------------------------- |
-| `alt+[` | *workbench.action.nextEditor,Panel,SideBar* |
-| `alt+]` | *workbench.action.nextEditor,Panel,SideBar* |
-| `ctrl+alt+f]` | *actions.find* |
-| `ctrl+h]` | *editor.action.smartSelect.expand* |
-| `alt+h]` | *editor.action.smartSelect.shrink* |
-| `ctrl+shift+n]` | *editor.action.moveLinesDownAction* |
-| `ctrl+shift+p]` | *editor.action.moveLinesUpAction* |
-| `alt+shift+n]` | *editor.action.copyLinesDownAction* |
-| `alt+shift+p]` | *editor.action.copyLinesUpAction* |
-| `ctrl+n` | *selectNextSuggestion* |
-| `ctrl+p` | *selectPrevSuggestion* |
-| `alt+'` | *editor.action.triggerSuggest* |
+| Command         | Desc                                        |
+| --------------- | ------------------------------------------- |
+| `alt+[`         | *workbench.action.nextEditor,Panel,SideBar* |
+| `alt+]`         | *workbench.action.nextEditor,Panel,SideBar* |
+| `ctrl+alt+f]`   | *actions.find*                              |
+| `ctrl+h]`       | *editor.action.smartSelect.expand*          |
+| `alt+h]`        | *editor.action.smartSelect.shrink*          |
+| `ctrl+shift+n]` | *editor.action.moveLinesDownAction*         |
+| `ctrl+shift+p]` | *editor.action.moveLinesUpAction*           |
+| `alt+shift+n]`  | *editor.action.copyLinesDownAction*         |
+| `alt+shift+p]`  | *editor.action.copyLinesUpAction*           |
+| `ctrl+n`        | *selectNextSuggestion*                      |
+| `ctrl+p`        | *selectPrevSuggestion*                      |
+| `alt+'`         | *editor.action.triggerSuggest*              |
+
+## Prefix
+
+| Command | Conflicted Command | Solve Conflict |
+| ------- | ------------------ | -------------- |
+| `C-x`   | cut                | `C-w`          |
+
+## Reserve
+
+| Command | Conflicted Command | Solve Conflict |
+| ------- | ------------------ | -------------- |
+| `C-c`   | copy               | `M-w`          |
+| `C-q`   | quit               | `C-x C-c`      |
+| `C-z`   | undo               | `C-/`          |
+| `C-;`   | -                  | -              |
 
 ---
 
@@ -130,6 +148,6 @@ trailing mode.
 
 ## Notes
 
-1. Keyboard shortcuts with prefix `C-x` will be triggered only when `textEditorFocus`
+1. Most Emacs's shortcuts will be triggered only when `textEditorFocus`.
 
 2. Conflicts can be occurred when install other extensions with keyboard shortcuts.

@@ -56,7 +56,7 @@ class Undo extends Command {
 
 @registerGlobalCommand
 class Redo extends Command {
-    name = "C-S-/";
+    name = "C-?";
     change = true;
     public run(): void {
         runNativeCommand("redo");
@@ -407,6 +407,23 @@ class GoToLine extends Command {
     }
 }
 
+@registerGlobalCommand
+class NextError extends Command {
+    name = 'M-g n';
+    public run(): void {
+        emacs.markRing.push(emacs.editor.pos);
+        runNativeCommand('editor.action.marker.next');
+    }
+}
+
+@registerGlobalCommand
+class PreviousError extends Command {
+    name = 'M-g p';
+    public run(): void {
+        emacs.markRing.push(emacs.editor.pos);
+        runNativeCommand('editor.action.marker.prev');
+    }
+}
 
 class FakeSearch extends Command {
     protected increase = true;

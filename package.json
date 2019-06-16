@@ -140,7 +140,7 @@
 			{
 				"command": "M-g",
 				"key": "alt+g",
-				"when": "editorTextFocus"
+				"when": ""
 			},
 			{
 				"command": "C-o",
@@ -153,7 +153,7 @@
 				"when": "editorTextFocus"
 			},
 			{
-				"command": "C-S-/",
+				"command": "C-?",
 				"key": "ctrl+shift+/",
 				"when": "editorTextFocus"
 			},
@@ -334,7 +334,77 @@
 				"command": "editor.action.triggerSuggest",
 				"key": "alt+'",
 				"when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly"
+			},
+			{
+				"native": true,
+				"command": "workbench.action.quickOpenNavigateNext",
+				"key": "ctrl+n",
+				"when": "inQuickOpen"
+			},
+			{
+				"native": true,
+				"command": "workbench.action.quickOpenNavigatePrevious",
+				"key": "ctrl+p",
+				"when": "inQuickOpen"
+			},
+		        {
+				"native": true,
+				"command": "list.focusDown",
+				"key": "ctrl+n",
+				"when": "listFocus && !inputFocus"
+			},
+			{
+				"native": true,
+			    "command": "list.focusUp",
+				"key": "ctrl+p",
+				"when": "listFocus && !inputFocus"
+			},
+			{
+				"native": true,
+			    "command": "list.collapse",
+				"key": "ctrl+b",
+				"when": "listFocus && !inputFocus"
+			},
+			{
+				"native": true,
+			    "command": "list.expand",
+				"key": "ctrl+f",
+				"when": "listFocus && !inputFocus"
+			},
+			{
+				"native": true,
+			    "command": "list.select",
+				"key": "ctrl+o",
+				"when": "listFocus && !inputFocus"
+			},
+			{
+				"native": true,
+			    "command": "workbench.action.focusActiveEditorGroup",
+				"key": "alt+0"
+			},
+			{
+				"native": true,
+			    "command": "workbench.action.togglePanel",
+				"key": "alt+9"
+			},
+			{
+				"native": true,
+			    "command": "workbench.action.toggleSidebarVisibility",
+				"key": "alt+8"
+			},
+			{
+				"native": true,
+			    "command": "workbench.action.toggleZenMode",
+				"key": "alt+enter"
+			},
+			{
+				"native": true,
+			    "command": "editor.action.clipboardPasteAction",
+				"key": "ctrl+shift+v",
+				"when": "textInputFocus && !editorReadonly"
 			}
+
+
 		],
 		"configuration": [
 			{

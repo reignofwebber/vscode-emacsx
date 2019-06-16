@@ -6,7 +6,7 @@ import * as logic from "./logichelper";
 import { start } from "repl";
 
 
-export function active() {
+export function active(extensionPath: string) {
 
 }
 

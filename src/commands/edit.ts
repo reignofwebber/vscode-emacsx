@@ -13,20 +13,27 @@ export function active() {
 
 class EditCommand extends Command {
     change = true;
+
+    protected editor: TextEditor | undefined;
+    protected doc: TextDocument | undefined;
+    protected pos: Position = new Position(0, 0);
+
     get selection() :Selection | undefined {
         return emacs.editor.sel;
     }
 
     public run(): void {
         emacs.setMark(false);
-        let editor = emacs.editor.ed;
-        if (editor) {
-            this.editRun(editor.document, emacs.editor.pos);
+        this.editor = emacs.editor.ed;
+        this.pos = emacs.editor.pos;
+        if (this.editor) {
+            this.doc = this.editor.document;
+            this.editRun();
         }
         emacs.setCurrentPosition();
     }
 
-    public editRun(doc: TextDocument, pos: Position): Position | void {
+    public editRun() {
 
     }
 
@@ -106,17 +113,17 @@ class EditCommand extends Command {
 @registerGlobalCommand
 class DeleteChar extends EditCommand {
     name = "C-d";
-    public editRun(doc: TextDocument, pos: Position): void {
-        let l = doc.lineAt(pos.line).text.length;
+    public editRun(): void {
+        let l = this.doc!.lineAt(this.pos.line).text.length;
         // last pos
-        if (pos.line >= doc.lineCount - 1 && pos.character >= l) {
+        if (this.pos.line >= this.doc!.lineCount - 1 && this.pos.character >= l) {
             return;
         }
         let range: Range;
-        if (pos.character >= l) {
-            range = new Range(pos.line, pos.character, pos.line + 1, 0);
+        if (this.pos.character >= l) {
+            range = new Range(this.pos.line, this.pos.character, this.pos.line + 1, 0);
         } else {
-            range = new Range(pos.line, pos.character, pos.line, pos.character + 1);
+            range = new Range(this.pos.line, this.pos.character, this.pos.line, this.pos.character + 1);
         }
         this.delete(range, false);
     }
@@ -125,17 +132,17 @@ class DeleteChar extends EditCommand {
 @registerGlobalCommand
 class KillLine extends EditCommand {
     name = "C-k";
-    public editRun(doc: TextDocument, pos: Position): void {
-        let l = doc.lineAt(pos.line).text.length;
+    public editRun(): void {
+        let l = this.doc!.lineAt(this.pos.line).text.length;
         // last pos
-        if (pos.line >= doc.lineCount - 1 && pos.character >= l) {
+        if (this.pos.line >= this.doc!.lineCount - 1 && this.pos.character >= l) {
             return;
         }
         let range: Range;
-        if (pos.character >= l) {
-            range = new Range(pos.line, pos.character, pos.line + 1, 0);
+        if (this.pos.character >= l) {
+            range = new Range(this.pos.line, this.pos.character, this.pos.line + 1, 0);
         } else {
-            range = new Range(pos.line, pos.character, pos.line, l);
+            range = new Range(this.pos.line, this.pos.character, this.pos.line, l);
         }
 
         let c = emacs.commandRing.back();
@@ -151,11 +158,11 @@ class KillLine extends EditCommand {
 @registerGlobalCommand
 class KillRegion extends EditCommand {
     name = "C-w";
-    public editRun(doc: TextDocument, pos: Position): void {
-        this.runHelper(doc, pos);
+    public editRun() {
+        this.runHelper();
     }
 
-    private async runHelper(doc: TextDocument, pos: Position) {
+    private async runHelper() {
         let selection = this.selection;
         // run native copy command
         await runNativeCommand('editor.action.clipboardCopyAction');
@@ -170,7 +177,7 @@ class KillRegion extends EditCommand {
 @registerGlobalCommand
 class KillRingSave extends EditCommand {
     name = "M-w";
-    public editRun(doc: TextDocument, pos: Position): void {
+    public editRun() {
         // run native copy command
         runNativeCommand('editor.action.clipboardCopyAction');
 
@@ -186,13 +193,13 @@ class KillRingSave extends EditCommand {
 @registerGlobalCommand
 class Yank extends EditCommand {
     name = "C-y";
-    public editRun(doc: TextDocument, pos: Position): void {
+    public editRun() {
         let text = emacs.killRing.back();
         if (text) {
-            let offset = doc.offsetAt(pos) + text.length;
-            this.insert(pos, text, () => {
-                let endPos = doc.positionAt(offset);
-                emacs.yankRange = new Range(pos, endPos);
+            let offset = this.doc!.offsetAt(this.pos) + text.length;
+            this.insert(this.pos, text, () => {
+                let endPos = this.doc!.positionAt(offset);
+                emacs.yankRange = new Range(this.pos, endPos);
                 emacs.setCurrentPosition(endPos);
             });
         }
@@ -210,7 +217,7 @@ class YankPop extends EditCommand {
         }
     }
 
-    public editRun(doc: TextDocument, pos: Position): void {
+    public editRun() {
         let c = emacs.commandRing.back();
         if (c && c.name === 'C-y') {
             // roll to pass the back string.
@@ -243,9 +250,9 @@ class YankPop extends EditCommand {
 @registerGlobalCommand
 class KillWord extends EditCommand {
     name = "M-d";
-    public editRun(doc: TextDocument, pos: Position): void {
-        let forWord = logic.getForWardWordPos(doc, pos);
-        let range = new Range(pos, forWord);
+    public editRun() {
+        let forWord = logic.getForWardWordPos(this.doc!, this.pos);
+        let range = new Range(this.pos, forWord);
 
         let c = emacs.commandRing.back();
         if (c && c.name === this.name) {
@@ -259,9 +266,9 @@ class KillWord extends EditCommand {
 @registerGlobalCommand
 class BackwardKillWord extends EditCommand {
     name = "M-del";
-    public editRun(doc: TextDocument, pos: Position): void {
-        let backWord = logic.getBackWardWordPos(doc, pos);
-        let range = new Range(backWord, pos);
+    public editRun() {
+        let backWord = logic.getBackWardWordPos(this.doc!, this.pos);
+        let range = new Range(backWord, this.pos);
 
         let c = emacs.commandRing.back();
         if (c && c.name === this.name) {
@@ -275,7 +282,7 @@ class BackwardKillWord extends EditCommand {
 @registerGlobalCommand
 class NewLineMayBeIndent extends EditCommand {
     name = "C-j";
-    public editRun(doc: TextDocument, pos: Position): void {
+    public editRun() {
         runNativeCommand('C-e').then(() => {
             runNativeCommand('C-m');
         });
@@ -285,7 +292,7 @@ class NewLineMayBeIndent extends EditCommand {
 @registerGlobalCommand
 class NewLine extends EditCommand {
     name = 'C-m';
-    public editRun(doc: TextDocument, pos: Position): void {
+    public editRun() {
         runNativeCommand('default:type', {
             text: '\n'
         });
@@ -295,7 +302,7 @@ class NewLine extends EditCommand {
 @registerGlobalCommand
 class IndentNewCommentLine extends EditCommand {
     name = 'M-j';
-    public editRun(doc: TextDocument, pos: Position): void {
+    public editRun() {
         runNativeCommand('default:type', {
             text: '\n'
         }).then(() => {
@@ -307,9 +314,9 @@ class IndentNewCommentLine extends EditCommand {
 @registerGlobalCommand
 class OpenLine extends EditCommand {
     name = "C-o";
-    public editRun(doc: TextDocument, pos: Position): void {
-        this.insert(pos, '\n', () => {
-            emacs.setCurrentPosition(pos);
+    public editRun() {
+        this.insert(this.pos, '\n', () => {
+            emacs.setCurrentPosition(this.pos);
         });
     }
 }
@@ -317,7 +324,9 @@ class OpenLine extends EditCommand {
 @registerGlobalCommand
 class DeleteBlankLines extends EditCommand {
     name = "C-x C-o";
-    public editRun(doc: TextDocument, pos: Position): void {
+    public editRun() {
+        let doc = this.doc!;
+        let pos = this.pos;
         let ct = doc.lineAt(pos.line).text;
         let endLine = pos.line;
         if (pos.line + 1 < doc.lineCount) {
@@ -352,7 +361,9 @@ class DeleteBlankLines extends EditCommand {
 @registerGlobalCommand
 class DeleteHorizontalSpace extends EditCommand {
     name = 'M-\\';
-    public editRun(doc: TextDocument, pos: Position) {
+    public editRun() {
+        let doc = this.doc!;
+        let pos = this.pos;
         if (pos.character === 0) {
             return;
         }
@@ -375,7 +386,9 @@ class DeleteHorizontalSpace extends EditCommand {
 class KillRectangle extends EditCommand {
     name = "C-x r k";
     del = true;
-    public editRun(doc: TextDocument, pos: Position) {
+    public editRun() {
+        let doc = this.doc!;
+        let pos = this.pos;
         let corner = emacs.markRing.back();
         if (!corner) {
             return;
@@ -418,8 +431,8 @@ class CopyRectangleAsKill extends KillRectangle {
 @registerGlobalCommand
 class YankRectangle extends EditCommand {
     name = 'C-x r y';
-    public editRun(doc: TextDocument, pos: Position) {
-        this.yank(doc, pos);
+    public editRun() {
+        this.yank(this.doc!, this.pos);
     }
 
     public async yank(doc: TextDocument, pos: Position) {
@@ -462,4 +475,29 @@ class YankRectangle extends EditCommand {
         emacs.setCurrentPosition(endPos);
 
     }
+}
+
+@registerGlobalCommand
+class ZapToChar extends EditCommand {
+    name = 'M-z';
+
+    public editRun() {
+        emacs.updateStatusBar('Zap to char: ');
+        this.stayActive = true;
+    }
+
+    public push(s: string):boolean {
+        // if s is charactor
+        if (/^[\x00-\x7f]$/.exec(s)) {
+            let endPos = logic.getNextPos(this.doc!, logic.getNextChar(this.doc!, this.pos, s));
+            this.delete(new Range(this.pos, endPos), true);
+
+            emacs.updateStatusBar('');
+            this.stayActive = false;
+            return true;
+        }
+        this.stayActive = false;
+        return false;
+    }
+
 }

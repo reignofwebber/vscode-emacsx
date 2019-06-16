@@ -54,6 +54,7 @@
 | `C-x r y`          | yank-rectangle          | -                           | -              |
 | `C-x C-;`          | comment-line            | -                           | -              |
 | `C-x ;`            | comment-region          | -                           | -              |
+| `M-z`              | zap-to-char             | -                           | -              |
 
 ### Search
 

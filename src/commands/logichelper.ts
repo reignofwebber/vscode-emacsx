@@ -1,5 +1,6 @@
 import {TextDocument, Position} from "vscode";
 import { wordSeparators } from "../configure";
+import _ = require("lodash");
 
 
 export function getForWardWordPos(doc: TextDocument, pos: Position): Position {
@@ -142,4 +143,26 @@ export function getPrevPos(doc: TextDocument, pos: Position): Position {
     } else {
         return pos;
     }
+}
+
+/**
+ *
+ * @param doc document
+ * @param pos current cursor position
+ * @param s char
+ */
+export function getNextChar(doc: TextDocument, pos: Position, s: string) {
+    let curLine = pos.line;
+    let c = pos.character;
+    while (curLine <= doc.lineCount - 1) {
+        c = _.findIndex(doc.lineAt(curLine).text, c => {
+            return c === s;
+        }, c + 1);
+        if (c !== -1) {
+            break;
+        }
+        c = -1;
+        ++curLine;
+    }
+    return new Position(curLine, c);
 }

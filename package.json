@@ -123,6 +123,11 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"command": "M-z",
+				"key": "alt+z",
+				"when": "editorTextFocus"
+			},
+			{
 				"command": "M-y",
 				"key": "alt+y",
 				"when": "editorTextFocus"

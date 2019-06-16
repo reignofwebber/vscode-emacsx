@@ -11,6 +11,10 @@ export function active() {
 
 }
 
+enum ParseState{
+    Argument,
+    Command
+}
 
 @registerGlobalCommand
 class UniversalArgument extends Command {
@@ -20,6 +24,8 @@ class UniversalArgument extends Command {
         repeatByNumber: false,
         num: 0
     };
+
+    parseState: ParseState;
     defaultSize: number = 4;
 
     private command: state.CommandContainer;
@@ -27,6 +33,7 @@ class UniversalArgument extends Command {
     constructor() {
         super();
         this.command = new state.CommandContainer();
+        this.parseState = ParseState.Argument;
     }
 
     private getValue(): number {
@@ -39,43 +46,60 @@ class UniversalArgument extends Command {
     }
 
     public push(s: string):boolean {
-        // parse argument
-        if (s === 'C-u' && !this.repeat.repeatByNumber) {
-            ++this.repeat.num;
-            emacs.updateStatusBar(this.name, true);
-            return true;
-        } else if (/^[0-9]$/.exec(s)) {
-            this.repeat.repeatByNumber = true;
-            this.repeat.num *= 10;
-            this.repeat.num += Number.parseInt(s);
-            emacs.updateStatusBar(this.name + ' ' + this.repeat.num.toString() + '-');
-            return true;
+        // parse argument stage.
+        if (this.parseState === ParseState.Argument) {
+            // parse argument
+            if (s === 'C-u' && !this.repeat.repeatByNumber) {
+                ++this.repeat.num;
+                emacs.updateStatusBar(this.name, true);
+                return true;
+            } else if (/^[0-9]$/.exec(s)) {
+                this.repeat.repeatByNumber = true;
+                this.repeat.num *= 10;
+                this.repeat.num += Number.parseInt(s);
+                emacs.updateStatusBar(this.name + ' ' + this.repeat.num.toString() + '-');
+                return true;
+            }
         }
+        // parse command stage.
+        this.parseState = ParseState.Command;
 
         // parse command
         let c = this.command.push(s, false);
+
         if (c === 'undefined') {
             this.stayActive = false;
         } else if (c === 'incomplete') {
-
+            if (!this.command.isActive) {
+                this.stayActive = false;
+            }
         } else {
             // command default repeat
             let command = c.command;
-            let arg = c.arg;
+            let args: any[] = [];
+            if (c.arg) {
+                args.push(c.arg);
+            }
+
             switch (command.repeatType) {
-                case RepeatType.Default:
+                case RepeatType.Loop:
+                    // ineffeciently
                     _.range(this.getValue()).forEach(() => {
-                        command.active(arg);
+                        command.active(...args);
                     });
                     break;
                 case RepeatType.Accept:
-                    command.active(arg, this.repeat);
+                    args.push(this.repeat);
+                    command.active(...args);
                     break;
                 case RepeatType.Reject:
                     command.active();
                     break;
             }
-            this.stayActive = false;
+            // curCommand don't need `push`
+            if (!this.command.isActive) {
+                this.stayActive = false;
+            }
         }
         return true;
     }
@@ -84,6 +108,8 @@ class UniversalArgument extends Command {
         this.repeat.num = 0;
         this.repeat.repeatByNumber = false;
         this.command.clear();
+        this.parseState = ParseState.Argument;
+
     }
 }
 

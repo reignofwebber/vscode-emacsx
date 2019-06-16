@@ -1,7 +1,7 @@
 import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
 import { emacs, RectangleText } from "../state";
 import { runNativeCommand } from "../runner";
-import { registerGlobalCommand, Command, IRepeat } from "./base";
+import { registerGlobalCommand, Command, IRepeat, RepeatType } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
 
@@ -13,6 +13,9 @@ export function active() {
 
 class EditCommand extends Command {
     change = true;
+    repeatType = RepeatType.Accept;
+
+    protected repeatNum = 1;
 
     protected editor: TextEditor | undefined;
     protected doc: TextDocument | undefined;
@@ -22,10 +25,11 @@ class EditCommand extends Command {
         return emacs.editor.sel;
     }
 
-    public run(): void {
+    public run(repeat?: IRepeat) {
         emacs.setMark(false);
         this.editor = emacs.editor.ed;
         this.pos = emacs.editor.pos;
+        this.repeatNum = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
         if (this.editor) {
             this.doc = this.editor.document;
             this.editRun();
@@ -35,6 +39,10 @@ class EditCommand extends Command {
 
     public editRun() {
 
+    }
+
+    public deactive() {
+        this.repeatNum = 1;
     }
 
     public insert(pos: Position, text: string, callback?: () => void) {
@@ -114,18 +122,8 @@ class EditCommand extends Command {
 class DeleteChar extends EditCommand {
     name = "C-d";
     public editRun(): void {
-        let l = this.doc!.lineAt(this.pos.line).text.length;
-        // last pos
-        if (this.pos.line >= this.doc!.lineCount - 1 && this.pos.character >= l) {
-            return;
-        }
-        let range: Range;
-        if (this.pos.character >= l) {
-            range = new Range(this.pos.line, this.pos.character, this.pos.line + 1, 0);
-        } else {
-            range = new Range(this.pos.line, this.pos.character, this.pos.line, this.pos.character + 1);
-        }
-        this.delete(range, false);
+        let endPos = logic.getNextByNum(this.doc!, this.pos, this.repeatNum);
+        this.delete(new Range(this.pos, endPos), false);
     }
 }
 
@@ -489,7 +487,11 @@ class ZapToChar extends EditCommand {
     public push(s: string):boolean {
         // if s is charactor
         if (/^[\x00-\x7f]$/.exec(s)) {
-            let endPos = logic.getNextPos(this.doc!, logic.getNextChar(this.doc!, this.pos, s));
+            let endPos = this.pos;
+            while (this.repeatNum--) {
+                endPos = logic.getNextByNum(this.doc!, logic.getNextByChar(this.doc!, endPos, s));
+            }
+
             this.delete(new Range(this.pos, endPos), true);
 
             emacs.updateStatusBar('');
@@ -499,5 +501,4 @@ class ZapToChar extends EditCommand {
         this.stayActive = false;
         return false;
     }
-
 }

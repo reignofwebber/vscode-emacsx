@@ -161,6 +161,7 @@ export class CommandContainer {
      */
     public push(command: string, run: boolean = true): "undefined" | "incomplete" | ICommand {
         // if last command is active
+        // FIXME? " `push`return false, _curCommand must be inActive"
         if (this._curCommand.isActive && this._curCommand.push(command)) {
             return "incomplete";
         }
@@ -240,6 +241,14 @@ export class CommandContainer {
     public clear() {
         this._list = [];
         emacs.updateStatusBar('');
+    }
+
+    get isEmpty() {
+        return this._list.length === 0;
+    }
+
+    get isActive() {
+        return this._curCommand.isActive;
     }
 }
 
@@ -406,8 +415,11 @@ class Emacs {
             text = str;
         }
 
-        this._statusItem.text = 'emacs: ' + text;
-
+        if (text.indexOf('emacs: ') === -1) {
+            this._statusItem.text = 'emacs: ' + text;
+        } else {
+            this._statusItem.text = text;
+        }
         this._statusItem.show();
     }
 

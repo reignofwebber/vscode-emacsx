@@ -12,7 +12,7 @@ export function active() {
 class MarkCommand extends Command {
     name = "C-Spc";
     repeatType = RepeatType.Accept;
-    public run(arg: any, repeat?: IRepeat): void {
+    public run(repeat?: IRepeat): void {
         if (repeat) {
             // TODO rolling a number
             let pos = emacs.markRing.rolling();

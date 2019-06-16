@@ -23,8 +23,8 @@ export interface IRepeat {
 }
 
 export enum RepeatType {
-    // repeat run()
-    Default,
+    // repeat active command, ineffeciently
+    Loop,
     // repeat as argument run(arg)
     Accept,
     // not support repeat
@@ -46,7 +46,7 @@ export class Command {
     // if change text
     change: boolean = false;
     // repeat type
-    repeatType: RepeatType = RepeatType.Default;
+    repeatType: RepeatType = RepeatType.Reject;
     // if need followed command, (true is active)
     private _state: boolean = false;
     // if stay state, if true, active() will not set InActive state.

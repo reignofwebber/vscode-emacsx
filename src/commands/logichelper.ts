@@ -125,17 +125,30 @@ export function getBackWardWordPos(doc: TextDocument, pos: Position): Position {
     }
 }
 
-export function getNextPos(doc: TextDocument, pos: Position): Position {
-    if (doc.lineAt(pos.line).text.length > pos.character) {
-        return new Position(pos.line, pos.character + 1);
-    } else if (doc.lineCount - 1 > pos.line) {
-        return new Position(pos.line + 1, 0);
-    } else {
+export function getNextByNum(doc: TextDocument, pos: Position, step: number = 1): Position {
+    if (step < 1) {
         return pos;
+    }
+    let curLine = pos.line;
+    let curCh = pos.character;
+    while (true) {
+        let lineLength = doc.lineAt(curLine).text.length;
+        if (curCh + step > lineLength) {
+            step -= (lineLength - curCh - 1);
+            ++curLine;
+            // the last line
+            if (curLine === doc.lineCount) {
+                return new Position(--curLine, lineLength);
+            }
+            curCh = 0;
+        } else {
+            curCh += step;
+            return new Position(curLine, curCh);
+        }
     }
 }
 
-export function getPrevPos(doc: TextDocument, pos: Position): Position {
+export function getPrevByNum(doc: TextDocument, pos: Position): Position {
     if (pos.character > 0) {
         return new Position(pos.line, pos.character - 1);
     } else if (pos.line > 0) {
@@ -151,13 +164,13 @@ export function getPrevPos(doc: TextDocument, pos: Position): Position {
  * @param pos current cursor position
  * @param s char
  */
-export function getNextChar(doc: TextDocument, pos: Position, s: string) {
+export function getNextByChar(doc: TextDocument, pos: Position, s: string) {
     let curLine = pos.line;
     let c = pos.character;
     while (curLine <= doc.lineCount - 1) {
         c = _.findIndex(doc.lineAt(curLine).text, c => {
             return c === s;
-        }, c + 1);
+        }, c);
         if (c !== -1) {
             break;
         }

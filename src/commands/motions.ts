@@ -617,7 +617,7 @@ class ISearch extends MotionCommand {
         if (!doc) {
             return this._searchStartPos;
         }
-        let nextPos = research ? logic.getNextPos(doc, this._searchStartPos) : logic.getNextPos(doc, this._curPos);
+        let nextPos = research ? logic.getNextByNum(doc, this._searchStartPos) : logic.getNextByNum(doc, this._curPos);
         let curLine = nextPos.line;
         let curC = nextPos.character;
         while (curLine <= doc.lineCount - 1) {
@@ -643,7 +643,7 @@ class ISearch extends MotionCommand {
         if (!doc) {
             return this._searchStartPos;
         }
-        let prevPos = research ? logic.getPrevPos(doc, this._searchStartPos) : logic.getPrevPos(doc, this._curPos);
+        let prevPos = research ? logic.getPrevByNum(doc, this._searchStartPos) : logic.getPrevByNum(doc, this._curPos);
         let curLine = prevPos.line;
         let curC: number | undefined = prevPos.character;
         while (curLine >= 0) {

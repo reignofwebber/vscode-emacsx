@@ -166,16 +166,17 @@ export function getPrevByNum(doc: TextDocument, pos: Position): Position {
  */
 export function getNextByChar(doc: TextDocument, pos: Position, s: string) {
     let curLine = pos.line;
-    let c = pos.character;
+    let chIndex = pos.character;
     while (curLine <= doc.lineCount - 1) {
-        c = _.findIndex(doc.lineAt(curLine).text, c => {
+        let text = doc.lineAt(curLine).text;
+        chIndex = _.findIndex(doc.lineAt(curLine).text, c => {
             return c === s;
-        }, c);
-        if (c !== -1) {
+        }, chIndex);
+        if (chIndex !== -1) {
             break;
         }
-        c = -1;
+        chIndex = 0;
         ++curLine;
     }
-    return new Position(curLine, c);
+    return new Position(curLine, chIndex);
 }

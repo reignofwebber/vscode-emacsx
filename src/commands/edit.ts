@@ -1,7 +1,7 @@
 import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
 import { emacs, RectangleText } from "../state";
 import { runNativeCommand } from "../runner";
-import { registerGlobalCommand, Command, IRepeat, RepeatType } from "./base";
+import { registerGlobalCommand, RepeatableCommand, IRepeat } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
 
@@ -11,11 +11,8 @@ export function active() {
 
 }
 
-class EditCommand extends Command {
+class EditCommand extends RepeatableCommand {
     change = true;
-    repeatType = RepeatType.Accept;
-
-    protected repeatNum = 1;
 
     protected editor: TextEditor | undefined;
     protected doc: TextDocument | undefined;
@@ -39,10 +36,6 @@ class EditCommand extends Command {
 
     public editRun() {
 
-    }
-
-    public deactive() {
-        this.repeatNum = 1;
     }
 
     public insert(pos: Position, text: string, callback?: () => void) {
@@ -91,6 +84,7 @@ class EditCommand extends Command {
                 editBuilder.delete(range);
             }).then(() => {
                 emacs.setCurrentPosition(range.start);
+                this.pos = emacs.editor.pos;
             });
         }
     }
@@ -479,6 +473,8 @@ class YankRectangle extends EditCommand {
 class ZapToChar extends EditCommand {
     name = 'M-z';
 
+    private _s: string = '';
+
     public editRun() {
         emacs.updateStatusBar('Zap to char: ');
         this.stayActive = true;
@@ -487,18 +483,27 @@ class ZapToChar extends EditCommand {
     public push(s: string):boolean {
         // if s is charactor
         if (/^[\x00-\x7f]$/.exec(s)) {
-            let endPos = this.pos;
-            while (this.repeatNum--) {
-                endPos = logic.getNextByNum(this.doc!, logic.getNextByChar(this.doc!, endPos, s));
-            }
-
-            this.delete(new Range(this.pos, endPos), true);
-
+            this._s = s;
+            this.zapToChar(s);
             emacs.updateStatusBar('');
             this.stayActive = false;
             return true;
         }
         this.stayActive = false;
         return false;
+    }
+
+    public repeatRun() {
+        this.zapToChar(this._s);
+    }
+
+    public zapToChar(s: string) {
+        let repeatNum = this.repeatNum;
+        let endPos = this.pos;
+        while (repeatNum--) {
+            endPos = logic.getNextByNum(this.doc!, logic.getNextByChar(this.doc!, endPos, s));
+        }
+
+        this.delete(new Range(this.pos, endPos), true);
     }
 }

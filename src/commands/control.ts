@@ -85,7 +85,7 @@ class UniversalArgument extends Command {
                 case RepeatType.Loop:
                     // ineffeciently
                     _.range(this.getValue()).forEach(() => {
-                        command.active(...args);
+                        command.repeatRun();
                     });
                     break;
                 case RepeatType.Accept:
@@ -123,10 +123,13 @@ class Repeat extends Command {
         let c = emacs.commandRing.back();
         if (c) {
             // without active it. ?
-            c.run();
-            c.stayActive = false;
+            c.repeatRun();
+            // if c is not Active, then following `z` will active.
+            if (!c.isActive) {
+                this.stayActive = true;
+            }
         }
-        this.stayActive = true;
+
     }
 
     public push(s: string):boolean {

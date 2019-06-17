@@ -99,6 +99,13 @@ export class Command {
     }
 
     /**
+     * repeat behavior, used by `C-u` or `C-x z`
+     */
+    public repeatRun() {
+
+    }
+
+    /**
      * push() override for active command
      * @param arg push override
      * @return accept or reject arg
@@ -112,6 +119,16 @@ export class Command {
      */
     public deactive() {
 
+    }
+}
+
+export abstract class RepeatableCommand extends Command {
+    repeatType = RepeatType.Accept;
+
+    protected repeatNum = 1;
+
+    public deactive() {
+        this.repeatNum = 1;
     }
 }
 

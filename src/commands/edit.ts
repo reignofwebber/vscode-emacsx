@@ -22,7 +22,7 @@ class EditCommand extends RepeatableCommand {
         return emacs.editor.sel;
     }
 
-    public run(repeat?: IRepeat) {
+    public async run(repeat?: IRepeat) {
         emacs.setMark(false);
         this.editor = emacs.editor.ed;
         this.pos = emacs.editor.pos;
@@ -223,7 +223,7 @@ class YankPop extends EditCommand {
         }
     }
 
-    public push(s: string): boolean {
+    public async push(s: string): Promise<boolean> {
         if (s === this.name) {
             this.replaceYank();
             return true;
@@ -480,7 +480,7 @@ class ZapToChar extends EditCommand {
         this.stayActive = true;
     }
 
-    public push(s: string):boolean {
+    public async push(s: string):Promise<boolean> {
         // if s is charactor
         if (/^[\x00-\x7f]$/.exec(s)) {
             this._s = s;
@@ -493,7 +493,7 @@ class ZapToChar extends EditCommand {
         return false;
     }
 
-    public repeatRun() {
+    public async repeatRun() {
         this.zapToChar(this._s);
     }
 

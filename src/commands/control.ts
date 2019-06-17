@@ -40,12 +40,12 @@ class UniversalArgument extends Command {
         return this.repeat.repeatByNumber ? this.repeat.num : this.defaultSize ** (this.repeat.num + 1);
     }
 
-    public run(): void {
+    public async run() {
         this.stayActive = true;
         emacs.updateStatusBar(this.name + '-');
     }
 
-    public push(s: string):boolean {
+    public async push(s: string): Promise<boolean> {
         // parse argument stage.
         if (this.parseState === ParseState.Argument) {
             // parse argument
@@ -65,7 +65,8 @@ class UniversalArgument extends Command {
         this.parseState = ParseState.Command;
 
         // parse command
-        let c = this.command.push(s, false);
+        let c = await this.command.push(s, false);
+
 
         if (c === 'undefined') {
             this.stayActive = false;
@@ -83,17 +84,17 @@ class UniversalArgument extends Command {
 
             switch (command.repeatType) {
                 case RepeatType.Loop:
-                    // ineffeciently
-                    _.range(this.getValue()).forEach(() => {
-                        command.repeatRun();
+                    // ineffeciently FIXME
+                    await _.range(this.getValue()).forEach(async () => {
+                        await command.repeatRun();
                     });
                     break;
                 case RepeatType.Accept:
                     args.push(this.repeat);
-                    command.active(...args);
+                    await command.active(...args);
                     break;
                 case RepeatType.Reject:
-                    command.active();
+                    await command.active();
                     break;
             }
             // curCommand don't need `push`
@@ -119,7 +120,7 @@ class Repeat extends Command {
     name = "C-x z";
     _trace = false;
 
-    public run(): void {
+    public async run() {
         let c = emacs.commandRing.back();
         if (c) {
             // without active it. ?
@@ -132,7 +133,7 @@ class Repeat extends Command {
 
     }
 
-    public push(s: string):boolean {
+    public async push(s: string): Promise<boolean> {
         if (s === 'z') {
             this.run();
             return true;
@@ -148,7 +149,7 @@ class Repeat extends Command {
 class ReadOnlyMode extends Command {
     name = 'C-x C-q';
     _trace = false;
-    public run(): void {
+    public async run() {
         emacs.isReadOnly = !emacs.isReadOnly;
         emacs.updateStatusBar( emacs.isReadOnly? 'Read-Only mode enabled' : 'Read-Only mode disabled');
     }

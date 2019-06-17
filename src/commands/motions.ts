@@ -2,7 +2,7 @@ import {TextDocument, Position, TextEditor, TextEditorCursorStyle } from "vscode
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
 import { wordSeparators } from "../configure";
-import { registerGlobalCommand, Command, RepeatType } from "./base";
+import { registerGlobalCommand, Command, RepeatType, RepeatableCommand, IRepeat } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
 
@@ -12,36 +12,40 @@ export function active() {
 }
 
 
-class MotionCommand extends Command {
-    public run(): void {
-        let doc = emacs.editor.doc;
-        if (doc) {
-            let pos = emacs.editor.pos;
-            let tar = this.motionRun(doc, pos);
+class MotionCommand extends RepeatableCommand {
+    change = false;
+
+    protected editor: TextEditor | undefined;
+    protected doc: TextDocument | undefined;
+    // Note: store dirty pos
+    protected pos: Position = new Position(0, 0);
+
+    public async run(repeat?: IRepeat) {
+        this.editor = emacs.editor.ed;
+        this.pos = emacs.editor.pos;
+        if (this.editor) {
+            this.doc = this.editor.document;
+        }
+        this.repeatNum = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
+        await this.runWrapper();
+    }
+
+    private async runWrapper() {
+        if (this.editor) {
+            let tar = await this.motionRun();
             if (tar) {
                 emacs.setCurrentPosition(tar, true);
             }
+            // store pos for repeat use
+            this.pos = emacs.editor.pos;
         }
     }
 
-    public motionRun(doc: TextDocument, pos: Position) : Position | undefined {
-        return;
-    }
-}
-
-class MotionExtCommand extends Command {
-    public run(): void {
-        let editor = emacs.editor.ed;
-        if (editor) {
-            let tar = this.motionRun(editor);
-            if (tar) {
-                emacs.setCurrentPosition(tar);
-            }
-        }
+    public async repeatRun() {
+        this.runWrapper();
     }
 
-    public motionRun(editor: TextEditor): Position | undefined {
-        return new Position(0, 0);
+    public async motionRun() : Promise<Position | void> {
     }
 }
 
@@ -49,7 +53,7 @@ class MotionExtCommand extends Command {
 class Undo extends Command {
     name = "C-/";
     change = true;
-    public run(): void {
+    public async run() {
         runNativeCommand("undo");
     }
 }
@@ -58,75 +62,48 @@ class Undo extends Command {
 class Redo extends Command {
     name = "C-?";
     change = true;
-    public run(): void {
+    public async run() {
         runNativeCommand("redo");
     }
 }
 
 
 @registerGlobalCommand
-class ForwardChar extends Command {
+class ForwardChar extends MotionCommand {
     name = "C-f";
-    public run(): void {
-        runNativeCommand("cursorMove", {
-            to: "right",
-            by: "character",
-            value: 1,
-            select: emacs.mark
-        });
+    public async motionRun() {
+        emacs.setCurrentPosition(logic.getNextByNum(this.doc!, this.pos, this.repeatNum));
     }
 }
 
 @registerGlobalCommand
-class BackwardChar extends Command {
+class BackwardChar extends MotionCommand {
     name = "C-b";
-    public run(): void {
-        runNativeCommand("cursorMove", {
-            to: "left",
-            by: "character",
-            value: 1,
-            select: emacs.mark
-        });
+    public async motionRun() {
+        emacs.setCurrentPosition(logic.getPrevByNum(this.doc!, this.pos, this.repeatNum));
     }
 }
 
-@registerGlobalCommand
-class NextLine extends MotionExtCommand {
-    name = "C-n";
-    public motionRun(editor: TextEditor): undefined {
-        runNativeCommand("cursorMove", {
-            to: "down",
-            by: "character",
-            value: 1,
-            select: emacs.mark
-        });
-        let range0 = editor.visibleRanges[0];
-        let line = emacs.editor.pos.line;
-        if (line !== editor.document.lineCount - 1 &&
+let baseColumn = 0;
+
+class LineUpDown extends MotionCommand {
+    public async motionRun() {
+        let c = emacs.commandRing.back();
+        if (!(c && (c.name === 'C-n' || c.name === 'C-p'))) {
+            baseColumn = this.pos.character;
+        }
+    }
+
+    protected reveal() {
+        let range0 = this.editor!.visibleRanges[0];
+        let line = this.pos.line;
+        if (line !== this.doc!.lineCount - 1 &&
             range0.end.line === line + 1) {
             runNativeCommand("revealLine", {
                 lineNumber: line,
                 at: "center"
             });
         }
-
-
-        return;
-    }
-}
-
-@registerGlobalCommand
-class PreviousLine extends MotionExtCommand {
-    name = "C-p";
-    public motionRun(editor: TextEditor): undefined {
-        runNativeCommand("cursorMove", {
-            to: "up",
-            by: "character",
-            value: 1,
-            select: emacs.mark
-        });
-        let range0 = editor.visibleRanges[0];
-        let line = emacs.editor.pos.line;
         if (line !== 0 &&
             range0.start.line === line) {
             runNativeCommand("revealLine", {
@@ -134,48 +111,67 @@ class PreviousLine extends MotionExtCommand {
                 at: "center"
             });
         }
+    }
 
-        return;
+}
+
+@registerGlobalCommand
+class NextLine extends LineUpDown {
+    name = "C-n";
+    public async motionRun() {
+        super.motionRun();
+        emacs.setCurrentPosition(logic.getNextByLine(this.doc!, this.pos, baseColumn, this.repeatNum));
+        this.reveal();
+    }
+}
+
+@registerGlobalCommand
+class PreviousLine extends LineUpDown {
+    name = "C-p";
+    public async motionRun() {
+        super.motionRun();
+        emacs.setCurrentPosition(logic.getPrevByLine(this.doc!, this.pos, baseColumn, this.repeatNum));
+        this.reveal();
     }
 }
 
 @registerGlobalCommand
 class ForwardWord extends MotionCommand {
     name = "M-f";
-    public motionRun(doc: TextDocument, pos: Position): Position {
-        return logic.getForWardWordPos(doc, pos);
+    public async motionRun(): Promise<Position> {
+        return logic.getForWardWordPos(this.doc!, this.pos);
     }
 }
 
 @registerGlobalCommand
 class BackwardWord extends MotionCommand {
     name = "M-b";
-    public motionRun(doc: TextDocument, pos: Position): Position {
-        return logic.getBackWardWordPos(doc, pos);
+    public async motionRun(): Promise<Position> {
+        return logic.getBackWardWordPos(this.doc!, this.pos);
     }
 }
 
 @registerGlobalCommand
 class MoveBeginningOfLine extends MotionCommand {
     name = "C-a";
-    public motionRun(doc: TextDocument, pos: Position): Position {
-        return new Position(pos.line, 0);
+    public async motionRun(): Promise<Position> {
+        return new Position(this.pos.line, 0);
     }
 }
 
 @registerGlobalCommand
 class MoveEndOfLine extends MotionCommand {
     name = "C-e";
-    public motionRun(doc: TextDocument, pos: Position): Position {
-        let endChIndex = doc.lineAt(pos.line).text.length;
-        return new Position(pos.line, endChIndex);
+    public async motionRun(): Promise<Position> {
+        let endChIndex = this.doc!.lineAt(this.pos.line).text.length;
+        return new Position(this.pos.line, endChIndex);
     }
 }
 
 @registerGlobalCommand
 class BeginningOfBuffer extends MotionCommand {
     name = "M-<";
-    public motionRun(doc: TextDocument, pos: Position): Position {
+    public async motionRun(): Promise<Position> {
         runNativeCommand("revealLine", {
             lineNumber: 0,
             at: "top"
@@ -187,9 +183,9 @@ class BeginningOfBuffer extends MotionCommand {
 @registerGlobalCommand
 class EndOfBuffer extends MotionCommand {
     name = "M->";
-    public motionRun(doc: TextDocument, pos: Position): Position {
-        let endLineIndex = doc.lineCount - 1;
-        let endChIndex = doc.lineAt(endLineIndex).text.length;
+    public async motionRun(): Promise<Position> {
+        let endLineIndex = this.doc!.lineCount - 1;
+        let endChIndex = this.doc!.lineAt(endLineIndex).text.length;
         runNativeCommand("revealLine", {
             lineNumber: endLineIndex,
             at: "bottom"
@@ -200,7 +196,7 @@ class EndOfBuffer extends MotionCommand {
 
 // FIXME
 @registerGlobalCommand
-class MoveToWindowLineTopBottom extends MotionExtCommand {
+class MoveToWindowLineTopBottom extends MotionCommand {
     name = "M-l";
     private _t: number = 0;
     private _c: number = 0;
@@ -213,9 +209,9 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
 
     protected curPos: "center" | "top" | "bottom" = "bottom";
 
-    public motionRun(editor: TextEditor): Position | undefined {
+    public async motionRun(): Promise<Position | void> {
         let line = 0;
-        let range0 = editor.visibleRanges[0];
+        let range0 = this.editor!.visibleRanges[0];
 
         let c = emacs.commandRing.back();
         if (!(c && c.name === this.name)) {
@@ -233,7 +229,7 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
             this.curPos = "bottom";
         }
 
-        this.setTopBottom(editor);
+        this.setTopBottom(this.editor!);
         this.stayActive = true;
         return new Position(line, 0);
     }
@@ -246,7 +242,7 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
         this._b = range0.end.line;
     }
 
-    public push(s: string):boolean {
+    public async push(s: string):Promise<boolean> {
         if (s === 'k') {
             this.curPos = "bottom";
             let record = {
@@ -309,10 +305,9 @@ class MoveToWindowLineTopBottom extends MotionExtCommand {
 @registerGlobalCommand
 class ScrollDownCommand extends MoveToWindowLineTopBottom {
     name = "M-v";
-    public motionRun(editor: TextEditor): Position | undefined {
-        this.runHelper(editor);
+    public async motionRun(): Promise<Position | void> {
+        this.runHelper(this.editor!);
         this.stayActive = true;
-        return;
     }
 
     public async runHelper(editor: TextEditor) {
@@ -333,10 +328,9 @@ class ScrollDownCommand extends MoveToWindowLineTopBottom {
 @registerGlobalCommand
 class ScrollUpCommand extends MoveToWindowLineTopBottom {
     name = "C-v";
-    public motionRun(editor: TextEditor): Position | undefined {
-        this.runHelper(editor);
+    public async motionRun(): Promise<Position | void> {
+        this.runHelper(this.editor!);
         this.stayActive = true;
-        return;
     }
 
     public async runHelper(editor: TextEditor) {
@@ -358,10 +352,9 @@ class ScrollUpCommand extends MoveToWindowLineTopBottom {
 class RecenterTopBottom extends MoveToWindowLineTopBottom {
     name = "C-l";
 
-    public motionRun(editor: TextEditor): Position | undefined {
-        this.runHelper(editor);
+    public async motionRun(): Promise<Position | void> {
+        this.runHelper(this.editor!);
         this.stayActive = true;
-        return;
     }
 
     public async runHelper(editor: TextEditor) {
@@ -390,18 +383,18 @@ class RecenterTopBottom extends MoveToWindowLineTopBottom {
 @registerGlobalCommand
 class BackToIndentation extends MotionCommand {
     name = 'M-m';
-    public motionRun(doc: TextDocument, pos: Position): Position | undefined {
-        let c = _.findIndex(doc.lineAt(pos.line).text, c => {
+    public async motionRun(): Promise<Position | void> {
+        let c = _.findIndex(this.doc!.lineAt(this.pos.line).text, c => {
             return ' \t'.indexOf(c) === -1;
         });
-        return new Position(pos.line, c === -1 ? 0 : c);
+        return new Position(this.pos.line, c === -1 ? 0 : c);
     }
 }
 
 @registerGlobalCommand
 class GoToLine extends Command {
     name = 'M-g g';
-    public run(): void {
+    public async run() {
         emacs.markRing.push(emacs.editor.pos);
         runNativeCommand('workbench.action.gotoLine');
     }
@@ -410,7 +403,7 @@ class GoToLine extends Command {
 @registerGlobalCommand
 class NextError extends Command {
     name = 'M-g n';
-    public run(): void {
+    public async run() {
         emacs.markRing.push(emacs.editor.pos);
         runNativeCommand('editor.action.marker.next');
     }
@@ -419,7 +412,7 @@ class NextError extends Command {
 @registerGlobalCommand
 class PreviousError extends Command {
     name = 'M-g p';
-    public run(): void {
+    public async run() {
         emacs.markRing.push(emacs.editor.pos);
         runNativeCommand('editor.action.marker.prev');
     }
@@ -432,7 +425,7 @@ class FakeSearch extends Command {
         s: string;
         p: Position;
     }[] = [];
-    public run() {
+    public async run() {
         this.stayActive = true;
         this.posHistory.push({
             s: '',
@@ -441,7 +434,7 @@ class FakeSearch extends Command {
         emacs.updateStatusBar(this.increase ? 'FakeIsearch: ' : 'FakeIsearch backward: ');
     }
 
-    public push(s: string): boolean {
+    public async push(s: string): Promise<boolean> {
         if (/^[\x00-\x7f]$/.exec(s)) {
             let editor = emacs.editor.ed;
             if (!editor) {
@@ -564,15 +557,14 @@ class ISearch extends MotionCommand {
         this.increase = true;
     }
 
-    public motionRun(doc: TextDocument, pos: Position):Position | undefined {
+    public async motionRun(): Promise<Position | void> {
         this.stayActive = true;
-        this._curPos = this._searchStartPos = pos;
+        this._curPos = this._searchStartPos = this.pos;
         this._statusHint = this.increase ? 'I-search: ' : 'I-search backward: ';
         emacs.updateStatusBar(this._statusHint + this._searchStr);
-        return;
     }
 
-    public push(s: string): boolean {
+    public async push(s: string): Promise<boolean> {
         // is char
         if (/^[\x00-\x7f]$/.exec(s)) {
             this._searchStr += s;

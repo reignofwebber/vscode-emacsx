@@ -159,10 +159,10 @@ export class CommandContainer {
      * @param command
      * @param get get command without active it.
      */
-    public push(command: string, run: boolean = true): "undefined" | "incomplete" | ICommand {
+    public async push(command: string, run: boolean = true): Promise<"undefined" | "incomplete" | ICommand> {
         // if last command is active
         // FIXME? " `push`return false, _curCommand must be inActive"
-        if (this._curCommand.isActive && this._curCommand.push(command)) {
+        if (this._curCommand.isActive && await this._curCommand.push(command)) {
             return "incomplete";
         }
         // quit active
@@ -183,7 +183,7 @@ export class CommandContainer {
         if (c) {
             this.clear();
             if (run) {
-                c.active();
+                await c.active();
             }
             this._curCommand = c;
             return {

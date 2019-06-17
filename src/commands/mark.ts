@@ -12,7 +12,7 @@ export function active() {
 class MarkCommand extends Command {
     name = "C-Spc";
     repeatType = RepeatType.Accept;
-    public run(repeat?: IRepeat): void {
+    public async run(repeat?: IRepeat) {
         if (repeat) {
             // TODO rolling a number
             let pos = emacs.markRing.rolling();
@@ -28,7 +28,7 @@ class MarkCommand extends Command {
 @registerGlobalCommand
 class ExchangePointAndMark extends Command {
     name = 'C-x C-x';
-    public run(): void {
+    public async run() {
         emacs.exchangeMark();
     }
 }
@@ -36,7 +36,7 @@ class ExchangePointAndMark extends Command {
 @registerGlobalCommand
 class PopGlobalMark extends Command {
     name = 'C-x C-Spc';
-    public run(): void {
+    public async run() {
         emacs.markRing.clear();
     }
 }
@@ -44,7 +44,7 @@ class PopGlobalMark extends Command {
 @registerGlobalCommand
 class MarkWholeBuffer extends Command {
     name = 'C-x h';
-    public run(): void {
+    public async run() {
         let doc = emacs.editor.doc;
         if (doc) {
             let endPos = new Position(doc.lineCount - 1, doc.lineAt(doc.lineCount - 1).text.length);

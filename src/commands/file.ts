@@ -13,7 +13,7 @@ export function active() {
 @registerGlobalCommand
 class SaveBuffer extends Command {
     name = 'C-x C-s';
-    public run(): void {
+    public async run() {
        runNativeCommand('workbench.action.files.save');
     }
 }
@@ -21,7 +21,7 @@ class SaveBuffer extends Command {
 @registerGlobalCommand
 class CodeSaveAllFiles extends Command {
     name = 'C-x s';
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.files.saveAll');
     }
 }
@@ -29,7 +29,7 @@ class CodeSaveAllFiles extends Command {
 @registerGlobalCommand
 class KillBuffer extends Command {
     name = 'C-x k';
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.closeActiveEditor');
     }
 }
@@ -38,7 +38,7 @@ class KillBuffer extends Command {
 class SaveBuffersKillTerminal extends Command {
     name = 'C-x C-c';
     repeatType = RepeatType.Reject;
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.quit');
     }
 }
@@ -47,7 +47,7 @@ class SaveBuffersKillTerminal extends Command {
 class ToggleZenMode extends Command {
     name = 'C-x C-z';
     repeatType = RepeatType.Reject;
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.toggleZenMode');
     }
 }
@@ -57,7 +57,7 @@ class CommentLine extends Command {
     name = 'C-x C-;';
     change = true;
     repeatType = RepeatType.Reject;
-    public run(): void {
+    public async run() {
         runNativeCommand('editor.action.commentLine');
     }
 }
@@ -67,7 +67,7 @@ class CommentBlock extends Command {
     name = 'C-x ;';
     change = true;
     repeatType = RepeatType.Reject;
-    public run(): void {
+    public async run() {
         runNativeCommand('editor.action.blockComment');
     }
 }

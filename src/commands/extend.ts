@@ -14,7 +14,7 @@ export function active(extensionPath: string) {
 @registerGlobalCommand
 class CodeQuickOpen extends Command {
     name = 'C-x C-f';
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.quickOpen');
     }
 }
@@ -22,7 +22,7 @@ class CodeQuickOpen extends Command {
 @registerGlobalCommand
 class CodeSplitEditorOrthogonal extends Command {
     name = 'C-x 2';
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.splitEditorOrthogonal');
     }
 }
@@ -30,7 +30,7 @@ class CodeSplitEditorOrthogonal extends Command {
 @registerGlobalCommand
 class CodeSplitEditor extends Command {
     name = 'C-x 3';
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.splitEditor');
     }
 }
@@ -38,7 +38,7 @@ class CodeSplitEditor extends Command {
 @registerGlobalCommand
 class CodeToggleEditorGroupLayout extends Command {
     name = 'C-x 4';
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.toggleEditorGroupLayout');
     }
 }
@@ -46,7 +46,7 @@ class CodeToggleEditorGroupLayout extends Command {
 @registerGlobalCommand
 class CodeFocusNextEditorGroup extends Command {
     name = 'C-x o';
-    public run(): void {
+    public async run() {
         runNativeCommand('workbench.action.focusNextGroup');
     }
 }

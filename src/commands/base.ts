@@ -65,10 +65,10 @@ export class Command {
         return this._state;
     }
 
-    public active(...arg: any[]): void {
+    public async active(...arg: any[]): Promise<void> {
         if (this.runCheck(...arg)) {
             this._state = true;
-            this.run(...arg);
+            await this.run(...arg);
             if (!this._stayActive) {
                 this._state = false;
                 this.deactive();
@@ -94,14 +94,14 @@ export class Command {
     /**
      * command run
      */
-    public run(...arg: any[]): void {
+    public async run(...arg: any[]) {
 
     }
 
     /**
      * repeat behavior, used by `C-u` or `C-x z`
      */
-    public repeatRun() {
+    public async repeatRun() {
 
     }
 
@@ -110,7 +110,7 @@ export class Command {
      * @param arg push override
      * @return accept or reject arg
      */
-    public push(arg: string):boolean {
+    public async push(arg: string):Promise<boolean> {
         return false;
     }
 
@@ -126,10 +126,6 @@ export abstract class RepeatableCommand extends Command {
     repeatType = RepeatType.Accept;
 
     protected repeatNum = 1;
-
-    public deactive() {
-        this.repeatNum = 1;
-    }
 }
 
 export function registerGlobalCommand(command: typeof Command) {
@@ -140,7 +136,7 @@ export function registerGlobalCommand(command: typeof Command) {
 @registerGlobalCommand
 class KeyboardQuit extends Command {
     name = "C-g";
-    public run(): void {
+    public async run() {
         emacs.command.clear();
         emacs.updateStatusBar("Quit");
     }
@@ -151,7 +147,7 @@ class DefaultType extends Command {
     name = '__default:type__';
     change = true;
     repeatType = RepeatType.Accept;
-    public run(c: string, repeat?: IRepeat): void {
+    public async run(c: string, repeat?: IRepeat) {
         let r = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
         runNativeCommand('default:type', {
             text: c.repeat(r)
@@ -163,7 +159,7 @@ class DefaultType extends Command {
 class DeleteLeft extends Command {
     name = '__Del__';
     change = true;
-    public run(c: string): void {
+    public async run(c: string) {
         runNativeCommand('deleteLeft');
     }
 }

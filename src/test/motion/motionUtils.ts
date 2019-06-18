@@ -6,10 +6,8 @@ import * as os from "os";
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
+import { IContent } from "../interface";
 
-interface IContent {
-    textArray: string[];
-}
 
 interface IMotionContent extends IContent{
     pos: {
@@ -29,8 +27,6 @@ export interface IMotionCase {
     // expect content
     expect: IMotionContent;
 }
-
-export let TEST_FILE = path.join(os.tmpdir(), 'test');
 
 function contentEqual(l: IMotionContent, r: IMotionContent) {
     if (l.textArray.length !== r.textArray.length) {
@@ -57,7 +53,7 @@ function contentEqual(l: IMotionContent, r: IMotionContent) {
     return true;
 }
 
-export function testMotion(testCase: IMotionCase) {
+export function testMotion(testCase: IMotionCase, cb?: () => boolean) {
     test(testCase.title, async () => {
         await insertContent(testCase.content);
         for (let c of testCase.commands) {
@@ -65,6 +61,9 @@ export function testMotion(testCase: IMotionCase) {
         }
         let result = retrieveContent();
         assert.ok(contentEqual(testCase.expect, result));
+        if (cb) {
+            assert.ok(cb);
+        }
     });
 }
 

@@ -139,7 +139,11 @@ class PreviousLine extends LineUpDown {
 class ForwardWord extends MotionCommand {
     name = "M-f";
     public async motionRun(): Promise<Position> {
-        return logic.getForWardWordPos(this.doc!, this.pos);
+        let pos = this.pos;
+        for (let i = 0; i < this.repeatNum; ++i) {
+            pos = logic.getForWardWordPos(this.doc!, pos);
+        }
+        return pos;
     }
 }
 
@@ -147,7 +151,11 @@ class ForwardWord extends MotionCommand {
 class BackwardWord extends MotionCommand {
     name = "M-b";
     public async motionRun(): Promise<Position> {
-        return logic.getBackWardWordPos(this.doc!, this.pos);
+        let pos = this.pos;
+        for (let i = 0; i < this.repeatNum; ++i) {
+            pos = logic.getBackWardWordPos(this.doc!, pos);
+        }
+        return pos;
     }
 }
 
@@ -219,7 +227,7 @@ class MoveToWindowLineTopBottom extends MotionCommand {
         }
 
         if (this.curPos === "bottom") {
-            line = (range0.start.line + range0.end.line) / 2;
+            line = Math.floor((range0.start.line + range0.end.line) / 2);
             this.curPos = "center";
         } else if (this.curPos === "center") {
             line = range0.start.line;
@@ -302,6 +310,7 @@ class MoveToWindowLineTopBottom extends MotionCommand {
     }
 }
 
+// TODO C-u, C-x z
 @registerGlobalCommand
 class ScrollDownCommand extends MoveToWindowLineTopBottom {
     name = "M-v";
@@ -324,7 +333,7 @@ class ScrollDownCommand extends MoveToWindowLineTopBottom {
     }
 }
 
-// FIXME C-u, C-x z
+// TOD0 C-u, C-x z
 @registerGlobalCommand
 class ScrollUpCommand extends MoveToWindowLineTopBottom {
     name = "C-v";

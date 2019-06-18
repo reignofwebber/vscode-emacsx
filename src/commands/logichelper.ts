@@ -30,7 +30,7 @@ export function getForWardWordPos(doc: TextDocument, pos: Position): Position {
         }
     }
     if (!isBreak) {
-        return new Position(curLine, curChIndex);
+        return new Position(--curLine, curChIndex);
     }
 
     // find separator

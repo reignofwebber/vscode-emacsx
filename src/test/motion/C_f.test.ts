@@ -4,7 +4,7 @@
 //
 
 // The module 'assert' provides assertion methods from node
-import { testMotion, insertContent, closeEditor, TEST_FILE, getFileName } from './testUtils';
+import { testMotion, getFileName } from './motionUtils';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';

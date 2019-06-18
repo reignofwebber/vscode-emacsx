@@ -21,7 +21,29 @@
 
 ## Selection
 
-- [ ] `C-Spc`
-- [ ] `C-x C-x`
-- [ ] `C-x h`
-- [ ] `C-x C-Spc`
+- [x] `C-Spc`
+- [x] `C-x C-x`
+- [x] `C-x h`
+- [x] `C-x C-Spc`
+
+## Edit
+
+- [ ] `C-d`
+- [ ] `M-d`
+- [ ] `M-del`
+- [ ] `C-k`
+- [ ] `C-w`
+- [ ] `M-w`
+- [ ] `C-y`
+- [ ] `M-y`
+- [ ] `C-j`
+- [ ] `C-m`
+- [ ] `C-o`
+- [ ] `C-x C-o`
+- [ ] `M-\`
+- [ ] `C-x r k`
+- [ ] `C-x r w`
+- [ ] `C-x r y`
+- [ ] `C-x C-;`
+- [ ] `C-x ;`
+- [ ] `M-z`

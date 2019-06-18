@@ -124,7 +124,7 @@ class Repeat extends Command {
         let c = emacs.commandRing.back();
         if (c) {
             // without active it. ?
-            c.repeatRun();
+            await c.repeatRun();
             // if c is not Active, then following `z` will active.
             if (!c.isActive) {
                 this.stayActive = true;
@@ -135,7 +135,7 @@ class Repeat extends Command {
 
     public async push(s: string): Promise<boolean> {
         if (s === 'z') {
-            this.run();
+            await this.run();
             return true;
         } else {
             this.stayActive = false;

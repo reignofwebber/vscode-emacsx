@@ -17,6 +17,9 @@ class EditCommand extends RepeatableCommand {
     protected editor: TextEditor | undefined;
     protected doc: TextDocument | undefined;
     protected pos: Position = new Position(0, 0);
+    protected repeatNum: number = 1;
+    // C-k use
+    protected repeat: IRepeat | undefined;
 
     get selection() :Selection | undefined {
         return emacs.editor.sel;
@@ -26,46 +29,45 @@ class EditCommand extends RepeatableCommand {
         emacs.setMark(false);
         this.editor = emacs.editor.ed;
         this.pos = emacs.editor.pos;
+        this.repeat = repeat;
         this.repeatNum = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
         if (this.editor) {
             this.doc = this.editor.document;
-            this.editRun();
+            await this.editRun();
         }
-        emacs.setCurrentPosition();
+        // ???
+        // emacs.setCurrentPosition();
     }
 
-    public editRun() {
+    public async repeatRun() {
+        if (this.editor) {
+            await this.editRun();
+        }
+    }
+
+    public async editRun() {
 
     }
 
-    public insert(pos: Position, text: string, callback?: () => void) {
+    public async insert(pos: Position, text: string) {
         let editor = emacs.editor.ed;
 
         if (editor) {
-            editor.edit(editBuilder => {
+            await editor.edit(editBuilder => {
                 editBuilder.insert(pos, text);
-            }).then(callback);
-        }
-    }
-
-    public replace(yankRange: Range, text: string) {
-        let editor = emacs.editor.ed;
-
-        if (editor) {
-            let doc = editor.document;
-            let offset = doc.offsetAt(yankRange.start) + text.length;
-
-            editor.edit(editBuilder => {
-                editBuilder.replace(yankRange, text);
-            }).then(() => {
-                let newPos = doc.positionAt(offset);
-                emacs.yankRange = new Range(yankRange.start, newPos);
-                emacs.setCurrentPosition(newPos);
             });
         }
     }
 
-    public delete(range: Range, putInKillRing: boolean, concat: boolean = false, positive: boolean = true) {
+    public async replace(range: Range, text: string) {
+        if (this.editor) {
+            await this.editor.edit(editBuilder => {
+                editBuilder.replace(range, text);
+            });
+        }
+    }
+
+    public async delete(range: Range, putInKillRing: boolean, concat: boolean = false, positive: boolean = true) {
         let editor = emacs.editor.ed;
 
         if (putInKillRing) {
@@ -80,25 +82,13 @@ class EditCommand extends RepeatableCommand {
         }
 
         if (editor) {
-            editor.edit(editBuilder => {
+            await editor.edit(editBuilder => {
                 editBuilder.delete(range);
-            }).then(() => {
-                emacs.setCurrentPosition(range.start);
-                this.pos = emacs.editor.pos;
             });
+            emacs.setCurrentPosition(range.start);
+            this.pos = emacs.editor.pos;
         }
     }
-
-    public deleteWithCallback(range: Range, callback: () => void) {
-        let editor = emacs.editor.ed;
-
-        if (editor) {
-            editor.edit(editBuilder => {
-                editBuilder.delete(range);
-            }).then(callback);
-        }
-    }
-
 
     public async deleteRanges(ranges: Range[]) {
         let editor = emacs.editor.ed;
@@ -115,33 +105,38 @@ class EditCommand extends RepeatableCommand {
 @registerGlobalCommand
 class DeleteChar extends EditCommand {
     name = "C-d";
-    public editRun(): void {
+    public async editRun() {
         let endPos = logic.getNextByNum(this.doc!, this.pos, this.repeatNum);
-        this.delete(new Range(this.pos, endPos), false);
+        await this.delete(new Range(this.pos, endPos), false);
     }
 }
 
 @registerGlobalCommand
 class KillLine extends EditCommand {
     name = "C-k";
-    public editRun(): void {
+    public async editRun() {
         let l = this.doc!.lineAt(this.pos.line).text.length;
         // last pos
-        if (this.pos.line >= this.doc!.lineCount - 1 && this.pos.character >= l) {
+        if (this.pos.line === this.doc!.lineCount - 1 && this.pos.character === l) {
             return;
         }
         let range: Range;
-        if (this.pos.character >= l) {
-            range = new Range(this.pos.line, this.pos.character, this.pos.line + 1, 0);
+        if (this.repeat) {
+            let endLine = this.pos.line + this.repeatNum > this.doc!.lineCount - 1 ? this.doc!.lineCount : this.pos.line + this.repeatNum;
+            range = new Range(this.pos.line, this.pos.character, endLine, 0);
         } else {
-            range = new Range(this.pos.line, this.pos.character, this.pos.line, l);
+            if (this.pos.character === l) {
+                range = new Range(this.pos.line, this.pos.character, this.pos.line + 1, 0);
+            } else {
+                range = new Range(this.pos.line, this.pos.character, this.pos.line, l);
+            }
         }
 
         let c = emacs.commandRing.back();
         if (c && c.name === this.name) {
-            this.delete(range, true, true);
+            await this.delete(range, true, true);
         } else {
-            this.delete(range, true);
+            await this.delete(range, true);
         }
 
     }
@@ -150,17 +145,17 @@ class KillLine extends EditCommand {
 @registerGlobalCommand
 class KillRegion extends EditCommand {
     name = "C-w";
-    public editRun() {
-        this.runHelper();
+    public async editRun() {
+        await this.runHelper();
     }
 
     private async runHelper() {
         let selection = this.selection;
         // run native copy command
-        await runNativeCommand('editor.action.clipboardCopyAction');
+        runNativeCommand('editor.action.clipboardCopyAction');
 
         if (selection) {
-            this.delete(selection, true);
+            await this.delete(selection, true);
         }
 
     }
@@ -169,7 +164,7 @@ class KillRegion extends EditCommand {
 @registerGlobalCommand
 class KillRingSave extends EditCommand {
     name = "M-w";
-    public editRun() {
+    public async editRun() {
         // run native copy command
         runNativeCommand('editor.action.clipboardCopyAction');
 
@@ -182,39 +177,52 @@ class KillRingSave extends EditCommand {
     }
 }
 
+// TODO handle C-u
 @registerGlobalCommand
 class Yank extends EditCommand {
     name = "C-y";
-    public editRun() {
+    public async editRun() {
         let text = emacs.killRing.back();
         if (text) {
             let offset = this.doc!.offsetAt(this.pos) + text.length;
-            this.insert(this.pos, text, () => {
-                let endPos = this.doc!.positionAt(offset);
-                emacs.yankRange = new Range(this.pos, endPos);
-                emacs.setCurrentPosition(endPos);
-            });
+            await this.insert(this.pos, text);
+            let endPos = this.doc!.positionAt(offset);
+            emacs.yankRange = new Range(this.pos, endPos);
+            emacs.setCurrentPosition(endPos);
         }
     }
 }
 
+// handle C-u
 @registerGlobalCommand
 class YankPop extends EditCommand {
     name = "M-y";
 
-    private replaceYank() {
+    private async replaceYank() {
         let text = emacs.killRing.rolling();
         if (text) {
-            this.replace(emacs.yankRange, text);
+            let yankRange = emacs.yankRange;
+
+            if (this.editor) {
+                let doc = this.editor.document;
+                let offset = doc.offsetAt(yankRange.start) + text.length;
+
+                await this.editor.edit(editBuilder => {
+                    editBuilder.replace(yankRange, text!);
+                });
+                let newPos = doc.positionAt(offset);
+                emacs.yankRange = new Range(yankRange.start, newPos);
+                emacs.setCurrentPosition(newPos);
+            }
         }
     }
 
-    public editRun() {
+    public async editRun() {
         let c = emacs.commandRing.back();
         if (c && c.name === 'C-y') {
             // roll to pass the back string.
             emacs.killRing.rolling();
-            this.replaceYank();
+            await this.replaceYank();
             this._trace = true;
             this.stayActive = true;
         } else {
@@ -225,7 +233,7 @@ class YankPop extends EditCommand {
 
     public async push(s: string): Promise<boolean> {
         if (s === this.name) {
-            this.replaceYank();
+            await this.replaceYank();
             return true;
         } else {
             this.stayActive = false;
@@ -242,15 +250,18 @@ class YankPop extends EditCommand {
 @registerGlobalCommand
 class KillWord extends EditCommand {
     name = "M-d";
-    public editRun() {
-        let forWord = logic.getForWardWordPos(this.doc!, this.pos);
-        let range = new Range(this.pos, forWord);
+    public async editRun() {
+        let endPos = this.pos;
+        for (let i = 0; i < this.repeatNum; ++i) {
+            endPos = logic.getForWardWordPos(this.doc!, endPos);
+        }
+        let range = new Range(this.pos, endPos);
 
         let c = emacs.commandRing.back();
         if (c && c.name === this.name) {
-            this.delete(range, true, true);
+            await this.delete(range, true, true);
         } else {
-        this.delete(range, true);
+        await this.delete(range, true);
     }
 }
 }
@@ -258,15 +269,18 @@ class KillWord extends EditCommand {
 @registerGlobalCommand
 class BackwardKillWord extends EditCommand {
     name = "M-del";
-    public editRun() {
-        let backWord = logic.getBackWardWordPos(this.doc!, this.pos);
-        let range = new Range(backWord, this.pos);
+    public async editRun() {
+        let endPos = this.pos;
+        for (let i = 0; i < this.repeatNum; ++i) {
+            endPos = logic.getBackWardWordPos(this.doc!, endPos);
+        }
+        let range = new Range(endPos, this.pos);
 
         let c = emacs.commandRing.back();
         if (c && c.name === this.name) {
-            this.delete(range, true, true, false);
+            await this.delete(range, true, true, false);
         } else {
-        this.delete(range, true);
+        await this.delete(range, true);
     }
 }
 }
@@ -274,9 +288,10 @@ class BackwardKillWord extends EditCommand {
 @registerGlobalCommand
 class NewLineMayBeIndent extends EditCommand {
     name = "C-j";
-    public editRun() {
-        runNativeCommand('C-e').then(() => {
-            runNativeCommand('C-m');
+    public async editRun() {
+        await runNativeCommand('C-e');
+        await runNativeCommand('default:type', {
+            text: '\n'.repeat(this.repeatNum)
         });
     }
 }
@@ -284,9 +299,9 @@ class NewLineMayBeIndent extends EditCommand {
 @registerGlobalCommand
 class NewLine extends EditCommand {
     name = 'C-m';
-    public editRun() {
-        runNativeCommand('default:type', {
-            text: '\n'
+    public async editRun() {
+        await runNativeCommand('default:type', {
+            text: '\n'.repeat(this.repeatNum)
         });
     }
 }
@@ -294,7 +309,7 @@ class NewLine extends EditCommand {
 @registerGlobalCommand
 class IndentNewCommentLine extends EditCommand {
     name = 'M-j';
-    public editRun() {
+    public async editRun() {
         runNativeCommand('default:type', {
             text: '\n'
         }).then(() => {
@@ -303,57 +318,69 @@ class IndentNewCommentLine extends EditCommand {
     }
 }
 
+// FIXME ? C-o blink with sync...
 @registerGlobalCommand
 class OpenLine extends EditCommand {
     name = "C-o";
-    public editRun() {
-        this.insert(this.pos, '\n', () => {
-            emacs.setCurrentPosition(this.pos);
-        });
+    public async editRun() {
+        await this.insert(this.pos, '\n'.repeat(this.repeatNum));
+        emacs.setCurrentPosition(this.pos);
     }
 }
 
 @registerGlobalCommand
 class DeleteBlankLines extends EditCommand {
     name = "C-x C-o";
-    public editRun() {
+    public async editRun() {
         let doc = this.doc!;
         let pos = this.pos;
         let ct = doc.lineAt(pos.line).text;
+        // search downward until find `endLine` which means the first non-blank line
         let endLine = pos.line;
+        let endText = doc.lineAt(endLine).text;
+        // search start at  (curLine + 1)
         if (pos.line + 1 < doc.lineCount) {
             endLine = pos.line + 1;
-            let curText = doc.lineAt(endLine).text;
-            while (endLine < doc.lineCount - 1 && /^\s*$/.exec(curText)) {
+            endText = doc.lineAt(endLine).text;
+            while (endLine < doc.lineCount - 1 && /^\s*$/.exec(endText)) {
                 ++endLine;
-                curText = doc.lineAt(endLine).text;
+                endText = doc.lineAt(endLine).text;
             }
         }
-        // if current line is empty, delete empty line previous this line.
-        if (/^\s*$/.exec(ct)) {
-            let curLine = pos.line;
-            let curText = doc.lineAt(curLine).text;
-            while (curLine > 0 && /^\s*$/.exec(curText)) {
-                --curLine;
-                curText = doc.lineAt(curLine).text;
+        let endLineIsBlank = false;
+        if (endLine === doc.lineCount - 1 && /^\s*$/.exec(endText)) {
+            endLineIsBlank = true;
+        }
+        // search upward util find `startLine` which means the first blank line or (cursur pos + 1)
+        let curLine = pos.line;
+        let curText = doc.lineAt(curLine).text;
+        while (curLine >= 0 && /^\s*$/.exec(curText)) {
+            --curLine;
+            if (curLine < 0) {
+                break;
             }
-            let startLine = curLine === 0 ? 0 : curLine + 1;
-            this.deleteWithCallback(new Range(startLine, 0, endLine - 1, 0), () => {
-                emacs.setCurrentPosition(new Position(startLine, 0));
-            });
-        } else {
-            this.deleteWithCallback(new Range(pos.line + 1, 0, endLine, 0), () => {
+            curText = doc.lineAt(curLine).text;
+        }
+        let startLine = curLine + 1;
+        // if curLine is `endLine - 1` and `startLine`
+        if (startLine + 1 === endLine || curLine === pos.line || endLineIsBlank ) {
+            await this.delete(new Range(startLine, 0, endLine, 0), false);
+            if (curLine === pos.line) {
                 emacs.setCurrentPosition(pos);
-            });
+            } else {
+                emacs.setCurrentPosition(new Position(startLine, 0));
+            }
+        } else {
+            await this.delete(new Range(startLine + 1, 0, endLine, 0), false);
+            emacs.setCurrentPosition(new Position(startLine, 0));
         }
-
     }
 }
 
 @registerGlobalCommand
 class DeleteHorizontalSpace extends EditCommand {
     name = 'M-\\';
-    public editRun() {
+    public async editRun() {
         let doc = this.doc!;
         let pos = this.pos;
         if (pos.character === 0) {
@@ -369,7 +396,7 @@ class DeleteHorizontalSpace extends EditCommand {
             return;
         }
 
-        this.delete(new Range(new Position(pos.line, c), pos), false);
+        await this.delete(new Range(new Position(pos.line, c), pos), false);
     }
 }
 
@@ -378,7 +405,7 @@ class DeleteHorizontalSpace extends EditCommand {
 class KillRectangle extends EditCommand {
     name = "C-x r k";
     del = true;
-    public editRun() {
+    public async editRun() {
         let doc = this.doc!;
         let pos = this.pos;
         let corner = emacs.markRing.back();
@@ -409,7 +436,7 @@ class KillRectangle extends EditCommand {
         }
         emacs.rectangleRing.push(new RectangleText(s));
         if (this.del) {
-            this.deleteRanges(rs);
+            await this.deleteRanges(rs);
         }
     }
 }
@@ -423,8 +450,8 @@ class CopyRectangleAsKill extends KillRectangle {
 @registerGlobalCommand
 class YankRectangle extends EditCommand {
     name = 'C-x r y';
-    public editRun() {
-        this.yank(this.doc!, this.pos);
+    public async editRun() {
+        await this.yank(this.doc!, this.pos);
     }
 
     public async yank(doc: TextDocument, pos: Position) {
@@ -475,16 +502,16 @@ class ZapToChar extends EditCommand {
 
     private _s: string = '';
 
-    public editRun() {
+    public async editRun() {
         emacs.updateStatusBar('Zap to char: ');
         this.stayActive = true;
     }
 
-    public async push(s: string):Promise<boolean> {
+    public async push(s: string): Promise<boolean> {
         // if s is charactor
         if (/^[\x00-\x7f]$/.exec(s)) {
             this._s = s;
-            this.zapToChar(s);
+            await this.zapToChar(s);
             emacs.updateStatusBar('');
             this.stayActive = false;
             return true;
@@ -494,16 +521,16 @@ class ZapToChar extends EditCommand {
     }
 
     public async repeatRun() {
-        this.zapToChar(this._s);
+        await this.zapToChar(this._s);
     }
 
-    public zapToChar(s: string) {
+    public async zapToChar(s: string) {
         let repeatNum = this.repeatNum;
         let endPos = this.pos;
         while (repeatNum--) {
             endPos = logic.getNextByNum(this.doc!, logic.getNextByChar(this.doc!, endPos, s));
         }
 
-        this.delete(new Range(this.pos, endPos), true);
+        await this.delete(new Range(this.pos, endPos), true);
     }
 }

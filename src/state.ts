@@ -168,7 +168,7 @@ export class CommandContainer {
         // quit active
         if ('C-g' === command) {
             if (run) {
-                this.c_quit.active();
+                await this.c_quit.active();
             }
             return {
                 command: this.c_quit
@@ -193,7 +193,7 @@ export class CommandContainer {
         } else if (this.isText(cName)) {
             this.clear();
             if (run) {
-                this.c_type.active(cName);
+                await this.c_type.active(cName);
             }
             return {
                 command: this.c_type,

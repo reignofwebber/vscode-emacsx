@@ -45,13 +45,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 	for (let keybinding of packagejson.contributes.keybindings) {
 		if (!keybinding.native) {
-			context.subscriptions.push(vscode.commands.registerCommand(keybinding.command, () => {
-				emacs.command.push(keybinding.command);
+			context.subscriptions.push(vscode.commands.registerCommand(keybinding.command, async () => {
+				await emacs.command.push(keybinding.command);
 			}));
 		}
 	}
-	context.subscriptions.push(vscode.commands.registerCommand("type", (arg) => {
-		emacs.command.push(arg.text);
+	context.subscriptions.push(vscode.commands.registerCommand("type", async (arg) => {
+		// await for runNativeCommand to sync like `C-j`
+		await emacs.command.push(arg.text);
 	}));
 }
 

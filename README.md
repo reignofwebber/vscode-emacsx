@@ -1,6 +1,6 @@
-# in progress
+# Emacs<>Vscode
 
-## Emacs Like Keymap
+## Emacs Keymap
 
 ### Motion
 
@@ -103,13 +103,13 @@
 | --------------- | ------------------------------------------- |
 | `alt+[`         | *workbench.action.nextEditor,Panel,SideBar* |
 | `alt+]`         | *workbench.action.nextEditor,Panel,SideBar* |
-| `ctrl+alt+f]`   | *actions.find*                              |
-| `ctrl+h]`       | *editor.action.smartSelect.expand*          |
-| `alt+h]`        | *editor.action.smartSelect.shrink*          |
-| `ctrl+shift+n]` | *editor.action.moveLinesDownAction*         |
-| `ctrl+shift+p]` | *editor.action.moveLinesUpAction*           |
-| `alt+shift+n]`  | *editor.action.copyLinesDownAction*         |
-| `alt+shift+p]`  | *editor.action.copyLinesUpAction*           |
+| `ctrl+alt+f`   | *actions.find*                              |
+| `ctrl+h`       | *editor.action.smartSelect.expand*          |
+| `alt+h`        | *editor.action.smartSelect.shrink*          |
+| `ctrl+shift+n` | *editor.action.moveLinesDownAction*         |
+| `ctrl+shift+p` | *editor.action.moveLinesUpAction*           |
+| `alt+shift+n`  | *editor.action.copyLinesDownAction*         |
+| `alt+shift+p`  | *editor.action.copyLinesUpAction*           |
 | `ctrl+n`        | *selectNextSuggestion*                      |
 | `ctrl+p`        | *selectPrevSuggestion*                      |
 | `alt+'`         | *editor.action.triggerSuggest*              |
@@ -145,7 +145,7 @@
 
 ## Features
 
-trailing mode.
+Refer to [FEATURES](./FEATURES.md) document.
 
 ## Notes
 

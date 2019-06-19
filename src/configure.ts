@@ -23,3 +23,6 @@ export function getRepeatNum(repeat?: IRepeat, useDefaultSize: boolean = true) {
     }
     return r;
 }
+
+// trailing mode
+export let enableBinaryTargetLine = selfConfig.enableBinaryTargetLine;

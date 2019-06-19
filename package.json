@@ -1,13 +1,15 @@
 {
 	"publisher": "reignofwebber",
-	"name": "emacs-ex",
+	"name": "emacsx",
 	"repository": "https://github.com/reignofwebber/emacsx.git",
-	"displayName": "emacs ex",
-	"description": "",
+	"displayName": "Emacs<>Vscode",
+	"description": "Emacs keymap for vscode",
 	"version": "0.0.1",
+	"icon": "emacs.png",
 	"engines": {
 		"vscode": "^1.33.0"
 	},
+	"license": "MIT",
 	"categories": [
 		"Other"
 	],
@@ -418,6 +420,11 @@
 						"type": "number",
 						"default": 4,
 						"description": "C-u default size"
+					},
+					"emacsx.enableBinaryTargetLine": {
+						"type": "boolean",
+						"default": false,
+						"description": "trail `j`, `k`, `l` for some motion command"
 					}
 				}
 			}

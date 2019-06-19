@@ -1,7 +1,7 @@
 import {TextDocument, Position, TextEditor, TextEditorCursorStyle } from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
-import { wordSeparators, getRepeatNum } from "../configure";
+import { wordSeparators, getRepeatNum, enableBinaryTargetLine } from "../configure";
 import { registerGlobalCommand, Command, RepeatableCommand } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
@@ -253,6 +253,10 @@ class MoveToWindowLineTopBottom extends MotionCommand {
     }
 
     public async push(s: string):Promise<boolean> {
+        if (!enableBinaryTargetLine) {
+            this.stayActive = false;
+            return false;
+        }
         if (s === 'k') {
             this.curPos = "bottom";
             let record = {

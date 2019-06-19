@@ -1,9 +1,5 @@
 # Change Log
 
-All notable changes to the "emacs-ex" extension will be documented in this file.
+## [v0.0.1](2019-06-19)
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+- basic emacs keybindings

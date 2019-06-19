@@ -3,6 +3,7 @@ import { keyMap, Command, ICommand } from "./commands/base";
 import _ = require("lodash");
 import { type } from "os";
 import { Mode } from "./global";
+import { killRingSize, markRingSize } from "./configure";
 
 /**
  * editor: wrap vscode editor
@@ -317,10 +318,10 @@ class Emacs {
         this._mark = false;
         this._anchor = new vscode.Position(0, 0);
         this._editor = new Editor();
-        this._killRing = new KillRing(20);
-        this._rectangleRing = new Ring(20);
+        this._killRing = new KillRing(killRingSize);
+        this._rectangleRing = new Ring(killRingSize);
         this._yankRange = new vscode.Range(0, 0, 0, 0);
-        this._markRing = new Ring(20);
+        this._markRing = new Ring(markRingSize);
         this._commandRing = new Ring(20);
         this._commandContainer = new CommandContainer();
         this._statusItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);

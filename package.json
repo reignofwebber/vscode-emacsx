@@ -421,6 +421,16 @@
 						"default": 4,
 						"description": "C-u default size"
 					},
+					"emacsx.killRingSize":{
+						"type": "number",
+						"default": 20,
+						"description": "kill ring buffer size"
+					},
+					"emacsx.markRingSize": {
+						"type": "number",
+						"default": 20,
+						"description": "mark ring buffer size"
+					},
 					"emacsx.enableBinaryTargetLine": {
 						"type": "boolean",
 						"default": false,

@@ -152,3 +152,7 @@ Refer to [FEATURES](./FEATURES.md) document.
 1. Most Emacs's shortcuts will be triggered only when `textEditorFocus`.
 
 2. Conflicts can be occurred when install other extensions with keyboard shortcuts.
+
+## Contribution & Issues
+
+Welcome pull requests and [issues](https://github.com/reignofwebber/vscode-emacsx/issues)

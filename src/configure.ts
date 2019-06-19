@@ -24,5 +24,11 @@ export function getRepeatNum(repeat?: IRepeat, useDefaultSize: boolean = true) {
     return r;
 }
 
+// kill ring size
+export let killRingSize = selfConfig.killRingSize;
+
+// mark ring size
+export let markRingSize = selfConfig.markRingSize;
+
 // trailing mode
 export let enableBinaryTargetLine = selfConfig.enableBinaryTargetLine;

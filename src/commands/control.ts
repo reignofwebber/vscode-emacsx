@@ -1,11 +1,12 @@
 import {TextDocument, Position, TextEditor, commands} from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
-import { wordSeparators } from "../configure";
-import { registerGlobalCommand, Command, keyMap, RepeatType, IRepeat } from "./base";
+import { wordSeparators, getRepeatNum } from "../configure";
+import { registerGlobalCommand, Command, keyMap } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
 import state = require('../state');
+import { IRepeat, RepeatType } from "../global";
 
 export function active() {
 
@@ -26,7 +27,6 @@ class UniversalArgument extends Command {
     };
 
     parseState: ParseState;
-    defaultSize: number = 4;
 
     private command: state.CommandContainer;
 
@@ -34,10 +34,6 @@ class UniversalArgument extends Command {
         super();
         this.command = new state.CommandContainer();
         this.parseState = ParseState.Argument;
-    }
-
-    private getValue(): number {
-        return this.repeat.repeatByNumber ? this.repeat.num : this.defaultSize ** (this.repeat.num + 1);
     }
 
     public async run() {
@@ -85,7 +81,7 @@ class UniversalArgument extends Command {
             switch (command.repeatType) {
                 case RepeatType.Loop:
                     // ineffeciently FIXME
-                    await _.range(this.getValue()).forEach(async () => {
+                    await _.range(getRepeatNum(this.repeat)).forEach(async () => {
                         await command.repeatRun();
                     });
                     break;

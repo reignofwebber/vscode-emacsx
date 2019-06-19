@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { keyMap, Mode, Command, ICommand } from "./commands/base";
+import { keyMap, Command, ICommand } from "./commands/base";
 import _ = require("lodash");
 import { type } from "os";
+import { Mode } from "./global";
 
 /**
  * editor: wrap vscode editor

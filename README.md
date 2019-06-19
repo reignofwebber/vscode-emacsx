@@ -139,11 +139,11 @@
 
 &#x2074; : In Emacs, this command is mapped to `C-x r M-w`. Copy behavior is similar to `C-x r k`.
 
-&#x2075; : `M-s` searchs **character** rather than **word** increasingly like vim's `f` command.
+&#x2075; : Not emacs command. `M-s` searchs **character** rather than **word** increasingly like vim's `f` command.
 
 &#x2076; : Reverse version of `M-s`.
 
-## Tricks
+## Features
 
 trailing mode.
 

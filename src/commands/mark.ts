@@ -1,6 +1,7 @@
 import { emacs } from "../state";
-import { registerGlobalCommand, Command, IRepeat, RepeatType } from "./base";
+import { registerGlobalCommand, Command } from "./base";
 import { Selection, Position } from "vscode";
+import { RepeatType, IRepeat } from "../global";
 
 
 export function active() {

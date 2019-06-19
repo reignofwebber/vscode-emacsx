@@ -1,9 +1,11 @@
 import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
 import { emacs, RectangleText } from "../state";
 import { runNativeCommand } from "../runner";
-import { registerGlobalCommand, RepeatableCommand, IRepeat } from "./base";
+import { registerGlobalCommand, RepeatableCommand } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
+import { IRepeat } from "../global";
+import { getRepeatNum } from "../configure";
 
 
 
@@ -30,7 +32,7 @@ class EditCommand extends RepeatableCommand {
         this.editor = emacs.editor.ed;
         this.pos = emacs.editor.pos;
         this.repeat = repeat;
-        this.repeatNum = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
+        this.repeatNum = getRepeatNum(repeat);
         if (this.editor) {
             this.doc = this.editor.document;
             await this.editRun();

@@ -416,10 +416,10 @@
 				"type": "object",
 				"title": "emacsx configuration",
 				"properties": {
-					"emacsx.useExtendCommand": {
-						"type": "boolean",
-						"default": true,
-						"description": "extend commands not come from emacs"
+					"emacsx.stepSize": {
+						"type": "number",
+						"default": 4,
+						"description": "C-u default size"
 					}
 				}
 			}

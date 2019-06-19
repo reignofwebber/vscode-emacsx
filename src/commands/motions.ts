@@ -1,10 +1,12 @@
 import {TextDocument, Position, TextEditor, TextEditorCursorStyle } from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
-import { wordSeparators } from "../configure";
-import { registerGlobalCommand, Command, RepeatType, RepeatableCommand, IRepeat } from "./base";
+import { wordSeparators, getRepeatNum } from "../configure";
+import { registerGlobalCommand, Command, RepeatableCommand } from "./base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
+import { IRepeat, RepeatType } from "../global";
+
 
 
 export function active() {
@@ -26,7 +28,7 @@ class MotionCommand extends RepeatableCommand {
         if (this.editor) {
             this.doc = this.editor.document;
         }
-        this.repeatNum = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
+        this.repeatNum = getRepeatNum(repeat);
         await this.runWrapper();
     }
 
@@ -479,6 +481,12 @@ class FakeSearch extends Command {
             }
             return true;
         } else {
+            let searchStartPos = this.posHistory[0].p;
+            if (!(searchStartPos.line === emacs.editor.pos.line &&
+                searchStartPos.character === emacs.editor.pos.character)) {
+                emacs.markRing.push(searchStartPos);
+            }
+
             this.stayActive = false;
             return false;
         }
@@ -505,7 +513,12 @@ class FakeSearch extends Command {
             c = -1;
             ++curLine;
         }
-        return new Position(curLine, c);
+        // can not find next
+        if (c === -1) {
+            return pos;
+        } else {
+            return new Position(curLine, c);
+        }
     }
 
     private getPrev(doc: TextDocument, pos: Position, s: string) {
@@ -523,7 +536,12 @@ class FakeSearch extends Command {
             c = -1;
             --curLine;
         }
-        return new Position(curLine, c);
+        // can not find next
+        if (c === -1) {
+            return pos;
+        } else {
+            return new Position(curLine, c);
+        }
     }
 
     public deactive() {
@@ -679,6 +697,7 @@ class ISearchForward extends ISearch {
 @registerGlobalCommand
 class ISearchBackWard extends ISearch {
     name = 'C-r';
+    increase = false;
     public deactive() {
         super.deactive();
         this.increase = false;

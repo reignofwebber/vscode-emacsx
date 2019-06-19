@@ -10,7 +10,6 @@ import * as edit from "./commands/edit";
 import * as control from "./commands/control";
 import * as file from "./commands/file";
 import * as extend from "./commands/extend";
-import { useExtendCommand } from './configure';
 
 
 
@@ -24,9 +23,8 @@ export function activate(context: vscode.ExtensionContext) {
 	edit.active();
 	control.active();
 	file.active();
-	if (useExtendCommand) {
-		extend.active(context.extensionPath);
-	}
+    extend.active(context.extensionPath);
+
 
 	const packagejson: {
 		contributes: {

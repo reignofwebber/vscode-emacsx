@@ -1,7 +1,4 @@
 import * as vscode from "vscode";
-import { emacs } from "./state";
-import { ICommand, Command, keyMap, Mode } from "./commands/base";
-import { repeatInitNumber } from "./configure";
 
 
 

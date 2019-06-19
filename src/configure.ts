@@ -1,7 +1,11 @@
 import * as vscode from "vscode";
+import { IRepeat } from "./global";
 
+let selfConfig = vscode.workspace.getConfiguration('emacsx');
+
+
+// wordSeparators
 export let wordSeparators = getWordSeparators();
-
 function getWordSeparators(): string {
     let editorConfig = vscode.workspace.getConfiguration('editor');
     let s =  editorConfig['wordSeparators'];
@@ -9,7 +13,13 @@ function getWordSeparators(): string {
     return s;
 }
 
-let selfConfig = vscode.workspace.getConfiguration('emacsx');
-
-export let useExtendCommand: boolean = selfConfig.useExtendCommand;
-export let repeatInitNumber: number = 4;
+// C-u size
+export function getRepeatNum(repeat?: IRepeat, useDefaultSize: boolean = true) {
+    let stepSize: number = selfConfig.stepSize < 1 ? 1 : selfConfig.stepSize;
+    let r = repeat ? repeat.repeatByNumber ? repeat.num : stepSize ** (repeat.num + 1) : 1;
+    if (r > 10000 || r < 0) {
+        console.log(`unexpect r size:${r}, size reset to 1`);
+        r = 1;
+    }
+    return r;
+}

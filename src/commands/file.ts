@@ -1,9 +1,10 @@
 import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
-import { registerGlobalCommand, Command, RepeatType } from "./base";
+import { registerGlobalCommand, Command } from "./base";
 import * as logic from "./logichelper";
 import { start } from "repl";
+import { RepeatType } from "../global";
 
 
 export function active() {

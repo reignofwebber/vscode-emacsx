@@ -1,10 +1,12 @@
 import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
+import { Mode, RepeatType, IRepeat } from "../global";
+import { getRepeatNum } from "../configure";
 
 
-export enum Mode {
-    Global,
-    Fundemental
+export interface ICommand {
+    command: Command;
+    arg?: any;
 }
 
 type KeyBinding = {
@@ -16,26 +18,6 @@ export let keyMap: {
 } = {
     [Mode.Global] : {}
 };
-
-export interface IRepeat {
-    num: number;
-    repeatByNumber: boolean;
-}
-
-export enum RepeatType {
-    // repeat active command, ineffeciently
-    Loop,
-    // repeat as argument run(arg)
-    Accept,
-    // not support repeat
-    Reject,
-}
-
-
-export interface ICommand {
-    command: Command;
-    arg?: any;
-}
 
 @registerGlobalCommand
 export class Command {
@@ -148,9 +130,8 @@ class DefaultType extends Command {
     change = true;
     repeatType = RepeatType.Accept;
     public async run(c: string, repeat?: IRepeat) {
-        let r = repeat ? repeat.repeatByNumber ? repeat.num : 4 ** (repeat.num + 1) : 1;
         runNativeCommand('default:type', {
-            text: c.repeat(r)
+            text: c.repeat(getRepeatNum(repeat))
 		});
     }
 }

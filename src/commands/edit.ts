@@ -37,8 +37,8 @@ class EditCommand extends RepeatableCommand {
             this.doc = this.editor.document;
             await this.editRun();
         }
-        // ???
-        // emacs.setCurrentPosition();
+        // deactive selection
+        emacs.setCurrentPosition();
     }
 
     public async repeatRun() {
@@ -154,7 +154,7 @@ class KillRegion extends EditCommand {
     private async runHelper() {
         let selection = this.selection;
         // run native copy command
-        runNativeCommand('editor.action.clipboardCopyAction');
+        await runNativeCommand('editor.action.clipboardCopyAction');
 
         if (selection) {
             await this.delete(selection, true);
@@ -168,7 +168,7 @@ class KillRingSave extends EditCommand {
     name = "M-w";
     public async editRun() {
         // run native copy command
-        runNativeCommand('editor.action.clipboardCopyAction');
+        await runNativeCommand('editor.action.clipboardCopyAction');
 
         if (this.selection) {
             let text = emacs.editor.text(this.selection);

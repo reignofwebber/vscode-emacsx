@@ -1,7 +1,7 @@
 {
 	"publisher": "reignofwebber",
 	"name": "emacsx",
-	"repository": "https://github.com/reignofwebber/emacsx.git",
+	"repository": "https://github.com/reignofwebber/vscode-emacsx.git",
 	"displayName": "Emacs<>Vscode",
 	"description": "Emacs keymap for vscode",
 	"version": "0.0.1",

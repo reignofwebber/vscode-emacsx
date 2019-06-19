@@ -2,6 +2,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import * as assert from 'assert';
 import { emacs } from "../state";
+import { writeFileSync } from "fs";
 
 
 export interface IContent {
@@ -23,9 +24,13 @@ export interface IContentCase<T extends IContent> {
 
 export function testContent<T extends IContent>(testInstance: ContentTest, testCase: IContentCase<T>, cb?: () => boolean) {
     test(testCase.title, async () => {
-        await testInstance.insertContent(testCase.content);
+        await testInstance.insertContent(testCase.content).catch(reason => {
+            console.log(`insertContent error due to ${reason}`);
+        });
         for (let c of testCase.commands) {
-            await emacs.command.push(c);
+            await emacs.command.push(c).catch(reason => {
+                console.log(`push command error due to ${reason}`);
+            });
         }
         let result = testInstance.retrieveContent();
         assert.ok(testInstance.contentEqual(testCase.expect, result));
@@ -37,14 +42,23 @@ export function testContent<T extends IContent>(testInstance: ContentTest, testC
 
 
 export class ContentTest {
+    private _file: string;
+    /**
+     * write test file to disk
+     * @param file testFile
+     */
+    public constructor(file: string) {
+        this._file = file;
+        writeFileSync(file, '');
+    }
     /**
      * insert text to activeEditor
      * @param content text array
      */
     public async insertContent(content: IContent) {
-        let editor = vscode.window.activeTextEditor;
-        assert.ok(editor, 'editor...............................');
-        let doc = editor!.document;
+        let doc = await vscode.workspace.openTextDocument(vscode.Uri.file(this._file));
+        let editor = await vscode.window.showTextDocument(doc);
+        assert.ok(editor, `editor..............................is ${editor}.`);
         let endCh = doc.lineAt(doc.lineCount - 1).text.length;
         let startPos = new vscode.Position(0, 0);
         let endPos = new vscode.Position(doc.lineCount - 1, endCh);
@@ -99,6 +113,10 @@ export class ContentTest {
             }
         }
         return true;
+    }
+
+    file () {
+        return this._file;
     }
 }
 

@@ -352,7 +352,7 @@
 				"key": "ctrl+p",
 				"when": "inQuickOpen"
 			},
-		        {
+			{
 				"native": true,
 				"command": "list.focusDown",
 				"key": "ctrl+n",
@@ -360,56 +360,54 @@
 			},
 			{
 				"native": true,
-			    "command": "list.focusUp",
+				"command": "list.focusUp",
 				"key": "ctrl+p",
 				"when": "listFocus && !inputFocus"
 			},
 			{
 				"native": true,
-			    "command": "list.collapse",
+				"command": "list.collapse",
 				"key": "ctrl+b",
 				"when": "listFocus && !inputFocus"
 			},
 			{
 				"native": true,
-			    "command": "list.expand",
+				"command": "list.expand",
 				"key": "ctrl+f",
 				"when": "listFocus && !inputFocus"
 			},
 			{
 				"native": true,
-			    "command": "list.select",
+				"command": "list.select",
 				"key": "ctrl+o",
 				"when": "listFocus && !inputFocus"
 			},
 			{
 				"native": true,
-			    "command": "workbench.action.focusActiveEditorGroup",
+				"command": "workbench.action.focusActiveEditorGroup",
 				"key": "alt+0"
 			},
 			{
 				"native": true,
-			    "command": "workbench.action.togglePanel",
+				"command": "workbench.action.togglePanel",
 				"key": "alt+9"
 			},
 			{
 				"native": true,
-			    "command": "workbench.action.toggleSidebarVisibility",
+				"command": "workbench.action.toggleSidebarVisibility",
 				"key": "alt+8"
 			},
 			{
 				"native": true,
-			    "command": "workbench.action.toggleZenMode",
+				"command": "workbench.action.toggleZenMode",
 				"key": "alt+enter"
 			},
 			{
 				"native": true,
-			    "command": "editor.action.clipboardPasteAction",
+				"command": "editor.action.clipboardPasteAction",
 				"key": "ctrl+shift+v",
 				"when": "textInputFocus && !editorReadonly"
 			}
-
-
 		],
 		"configuration": [
 			{
@@ -439,6 +437,8 @@
 		"typescript": "^3.3.1",
 		"vscode": "^1.1.28",
 		"tslint": "^5.12.1",
+		"gulp": "4.0.2",
+		"gulp-typescript": "5.0.1",
 		"@types/node": "^10.12.21",
 		"@types/mocha": "^2.2.42",
 		"@types/lodash": "^4.14.134"

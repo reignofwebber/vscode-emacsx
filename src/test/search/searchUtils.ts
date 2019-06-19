@@ -1,13 +1,9 @@
-import { emacs } from "../../state";
-import { commands } from "vscode";
 import * as assert from 'assert';
-import { openSync } from "fs";
-import * as os from "os";
-import * as fs from "fs";
-import * as path from "path";
 import * as vscode from "vscode";
 
 import { IContent, ContentTest, IContentCase, testContent } from "../testBase";
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 
 interface ISearch extends IContent{
@@ -19,6 +15,9 @@ interface ISearch extends IContent{
 
 
 class SearchTest extends ContentTest {
+    public constructor() {
+        super(join(tmpdir(), 'searchtest'));
+    }
     public async insertContent(content: ISearch) {
         await super.insertContent(content);
         let active = new vscode.Position(content.pos.line, content.pos.character);

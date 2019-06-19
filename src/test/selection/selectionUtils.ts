@@ -2,6 +2,8 @@ import * as assert from 'assert';
 import * as vscode from "vscode";
 
 import { IContent, ContentTest, testContent, IContentCase } from "../testBase"
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 
 interface ISelection extends IContent {
@@ -16,6 +18,9 @@ interface ISelection extends IContent {
 }
 
 class SelectionTest extends ContentTest {
+    public constructor() {
+        super(join(tmpdir(), 'selectiontest'));
+    }
     public async insertContent(content: ISelection) {
         await super.insertContent(content);
         let active = new vscode.Position(content.active.line, content.active.character);

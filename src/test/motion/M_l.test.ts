@@ -11,16 +11,6 @@ let display = getFileName(__filename);
 let fileName = path.join(os.tmpdir(), display);
 
 suite(display, () => {
-    suiteSetup(async () => {
-        fs.writeFileSync(fileName, '');
-        let doc = await vscode.workspace.openTextDocument(vscode.Uri.file(fileName));
-        await vscode.window.showTextDocument(doc);
-    });
-
-    suiteTeardown(async () => {
-        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        fs.unlinkSync(fileName);
-    });
 
     testMotion({
         title: 'move in empty buffer',

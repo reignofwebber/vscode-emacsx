@@ -127,26 +127,6 @@ class LineUpDown extends MotionCommand {
             baseColumn = this.pos.character;
         }
     }
-
-    protected reveal() {
-        let range0 = this.editor!.visibleRanges[0];
-        let line = this.pos.line;
-        if (line !== this.doc!.lineCount - 1 &&
-            range0.end.line === line + 1) {
-            runNativeCommand("revealLine", {
-                lineNumber: line,
-                at: "center"
-            });
-        }
-        if (line !== 0 &&
-            range0.start.line === line) {
-            runNativeCommand("revealLine", {
-                lineNumber: line,
-                at: "center"
-            });
-        }
-    }
-
 }
 
 @registerGlobalCommand
@@ -160,8 +140,22 @@ class NextLine extends LineUpDown {
     public async motionRun() {
         super.motionRun();
         emacs.setCurrentPosition(logic.getNextByLine(this.doc!, this.pos, baseColumn, this.repeatNum));
+        let c = emacs.commandRing.back();
         this.reveal();
     }
+
+    private reveal() {
+        let range0 = this.editor!.visibleRanges[0];
+        let line = this.pos.line;
+        if (line !== this.doc!.lineCount - 1 &&
+            range0.end.line === line + 1) {
+            runNativeCommand("revealLine", {
+                lineNumber: line,
+                at: "center"
+            });
+        }
+    }
+
 }
 
 @registerGlobalCommand
@@ -175,8 +169,22 @@ class PreviousLine extends LineUpDown {
     public async motionRun() {
         super.motionRun();
         emacs.setCurrentPosition(logic.getPrevByLine(this.doc!, this.pos, baseColumn, this.repeatNum));
+        let c = emacs.commandRing.back();
         this.reveal();
     }
+
+    protected reveal() {
+        let range0 = this.editor!.visibleRanges[0];
+        let line = this.pos.line;
+        if (line !== 0 &&
+            range0.start.line === line) {
+            runNativeCommand("revealLine", {
+                lineNumber: line,
+                at: "center"
+            });
+        }
+    }
+
 }
 
 @registerGlobalCommand

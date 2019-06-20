@@ -1,12 +1,8 @@
-import {TextDocument, Position, TextEditor, commands} from "vscode";
-import { emacs } from "../state";
-import { runNativeCommand } from "../runner";
-import { wordSeparators, getRepeatNum } from "../configure";
-import { registerGlobalCommand, Command, keyMap } from "./base";
-import * as logic from "./logichelper";
+import { getRepeatNum } from "../configure";
+import { CommandContainer, emacs } from "../emacs";
+import { IRepeat } from "../global";
+import { Command, registerGlobalCommand } from "../cmd_base";
 import _ = require("lodash");
-import state = require('../state');
-import { IRepeat, RepeatType } from "../global";
 
 export function active() {
 
@@ -19,8 +15,6 @@ enum ParseState{
 
 @registerGlobalCommand
 class UniversalArgument extends Command {
-    name = 'C-u';
-    _trace = false;
     repeat: IRepeat = {
         repeatByNumber: false,
         num: 0
@@ -28,11 +22,14 @@ class UniversalArgument extends Command {
 
     parseState: ParseState;
 
-    private command: state.CommandContainer;
+    private command: CommandContainer;
 
-    constructor() {
-        super();
-        this.command = new state.CommandContainer();
+    public constructor() {
+        super({
+            name: 'C-u',
+            trace: false
+        });
+        this.command = new CommandContainer();
         this.parseState = ParseState.Argument;
     }
 
@@ -78,21 +75,8 @@ class UniversalArgument extends Command {
                 args.push(c.arg);
             }
 
-            switch (command.repeatType) {
-                case RepeatType.Loop:
-                    // ineffeciently FIXME
-                    await _.range(getRepeatNum(this.repeat)).forEach(async () => {
-                        await command.repeatRun();
-                    });
-                    break;
-                case RepeatType.Accept:
-                    args.push(this.repeat);
-                    await command.active(...args);
-                    break;
-                case RepeatType.Reject:
-                    await command.active();
-                    break;
-            }
+            args.push(this.repeat);
+            await command.active(...args);
             // curCommand don't need `push`
             if (!this.command.isActive) {
                 this.stayActive = false;
@@ -110,11 +94,14 @@ class UniversalArgument extends Command {
     }
 }
 
-// TODO C-u && C-x z
 @registerGlobalCommand
 class Repeat extends Command {
-    name = "C-x z";
-    _trace = false;
+    public constructor() {
+        super({
+            name: 'C-x z',
+            trace: false
+        });
+    }
 
     public async run() {
         let c = emacs.commandRing.back();
@@ -143,8 +130,13 @@ class Repeat extends Command {
 // TODO
 @registerGlobalCommand
 class ReadOnlyMode extends Command {
-    name = 'C-x C-q';
-    _trace = false;
+    public constructor() {
+        super({
+            name: 'C-x C-q',
+            trace: false
+        });
+    }
+
     public async run() {
         emacs.isReadOnly = !emacs.isReadOnly;
         emacs.updateStatusBar( emacs.isReadOnly? 'Read-Only mode enabled' : 'Read-Only mode disabled');

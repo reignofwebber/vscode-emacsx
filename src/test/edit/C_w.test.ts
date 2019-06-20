@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { emacs } from "../../state";
+import { emacs } from "../../emacs";
 
 
 let display = getFileName(__filename);

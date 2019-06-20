@@ -1,7 +1,7 @@
-import { emacs } from "../state";
-import { runNativeCommand } from "../runner";
-import { Mode, RepeatType, IRepeat } from "../global";
-import { getRepeatNum } from "../configure";
+import { getRepeatNum } from "./configure";
+import { emacs } from "./emacs";
+import { IRepeat, Mode, ICmdConfig } from "./global";
+import { runNativeCommand } from "./runner";
 
 
 export interface ICommand {
@@ -19,20 +19,43 @@ export let keyMap: {
     [Mode.Global] : {}
 };
 
-@registerGlobalCommand
-export class Command {
+
+export abstract class Command {
+    // configurable properties
     // name of Command
-    name: string = "__nothing__";
+    private _name: string = "";
     // trace (if emacs trace this command name)
-    _trace: boolean = true;
+    private _trace: boolean = true;
     // if change text
-    change: boolean = false;
-    // repeat type
-    repeatType: RepeatType = RepeatType.Reject;
-    // if need followed command, (true is active)
+    private _modify: boolean = false;
+    // default repeat num
+    protected repeatNum = 1;
+
     private _state: boolean = false;
     // if stay state, if true, active() will not set InActive state.
     private _stayActive: boolean = false;
+
+    public constructor(config: ICmdConfig) {
+        // configurable properties
+        this._name = config.name;
+        this._trace = config.trace === undefined ? true : config.trace;
+        this._modify = config.modify === undefined ? false: config.modify;
+        //
+        // if need followed command, (true is active)
+        this._state = false;
+    }
+
+    get name () {
+        return this._name;
+    }
+
+    get trace() {
+        return this._trace;
+    }
+
+    set trace(t: boolean) {
+        this._trace = t;
+    }
 
     // must override push() method to deactive command
     public set stayActive(s: boolean) {
@@ -67,7 +90,7 @@ export class Command {
      */
     public runCheck(...arg: any[]): boolean {
         // command is changable but editor is readonly
-        if (this.change && emacs.isReadOnly) {
+        if (this._modify && emacs.isReadOnly) {
             return false;
         }
         return true;
@@ -104,20 +127,36 @@ export class Command {
     }
 }
 
-export abstract class RepeatableCommand extends Command {
-    repeatType = RepeatType.Accept;
-
-    protected repeatNum = 1;
+@registerGlobalCommand
+export class Nothing extends Command {
+    public constructor() {
+        super({
+            name: "__nothing__"
+        });
+    }
 }
 
-export function registerGlobalCommand(command: typeof Command) {
+export abstract class RepeatableCommand extends Command {
+
+}
+
+export function registerGlobalCommand(command: new (...args:any[]) => Command) {
     let c = new command();
     keyMap[Mode.Global][c.name] = c;
 }
 
+//////////////////////////////////////////////////////////////////
+// commands below will be preloaded
+//////////////////////////////////////////////////////////////////
+
 @registerGlobalCommand
 class KeyboardQuit extends Command {
-    name = "C-g";
+    public constructor() {
+        super({
+            name: 'C-g'
+        });
+    }
+
     public async run() {
         emacs.command.clear();
         emacs.updateStatusBar("Quit");
@@ -126,9 +165,12 @@ class KeyboardQuit extends Command {
 
 @registerGlobalCommand
 class DefaultType extends Command {
-    name = '__default:type__';
-    change = true;
-    repeatType = RepeatType.Accept;
+    public constructor() {
+        super({
+            name: '__default:type__',
+            modify: true
+        });
+    }
     public async run(c: string, repeat?: IRepeat) {
         runNativeCommand('default:type', {
             text: c.repeat(getRepeatNum(repeat))
@@ -138,8 +180,13 @@ class DefaultType extends Command {
 
 @registerGlobalCommand
 class DeleteLeft extends Command {
-    name = '__Del__';
-    change = true;
+    public constructor() {
+        super({
+            name: '__Del__',
+            modify: true
+        });
+    }
+
     public async run(c: string) {
         runNativeCommand('deleteLeft');
     }

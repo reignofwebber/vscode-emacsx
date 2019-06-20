@@ -1,7 +1,7 @@
-import { emacs } from "../state";
-import { registerGlobalCommand, Command } from "./base";
-import { Selection, Position } from "vscode";
-import { RepeatType, IRepeat } from "../global";
+import { Position, Selection } from "vscode";
+import { emacs } from "../emacs";
+import { IRepeat } from "../global";
+import { Command, registerGlobalCommand } from "../cmd_base";
 
 
 export function active() {
@@ -11,9 +11,13 @@ export function active() {
 // TODO C-Spc Spc Spc
 @registerGlobalCommand
 class MarkCommand extends Command {
-    name = "C-Spc";
-    repeatType = RepeatType.Accept;
     repeat: IRepeat | undefined;
+
+    public constructor() {
+        super({
+            name: 'C-Spc'
+        });
+    }
 
     // TODO BUG HERE --> last pos
     private rolling() {
@@ -44,7 +48,12 @@ class MarkCommand extends Command {
 
 @registerGlobalCommand
 class ExchangePointAndMark extends Command {
-    name = 'C-x C-x';
+    public constructor() {
+        super({
+            name: 'C-x C-x'
+        });
+    }
+
     public async run() {
         emacs.exchangeMark();
     }
@@ -52,7 +61,12 @@ class ExchangePointAndMark extends Command {
 
 @registerGlobalCommand
 class PopGlobalMark extends Command {
-    name = 'C-x C-Spc';
+    public constructor() {
+        super({
+            name: 'C-x C-Spc'
+        });
+    }
+
     public async run() {
         emacs.markRing.clear();
     }
@@ -60,7 +74,12 @@ class PopGlobalMark extends Command {
 
 @registerGlobalCommand
 class MarkWholeBuffer extends Command {
-    name = 'C-x h';
+    public constructor() {
+        super({
+            name: 'C-x h'
+        });
+    }
+
     public async run() {
         let doc = emacs.editor.doc;
         if (doc) {

@@ -1,11 +1,12 @@
-import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
-import { emacs, RectangleText } from "../state";
+import { Position, Range, Selection, TextDocument, TextEditor } from "vscode";
+import { getRepeatNum } from "../configure";
+import { RectangleText } from "../ds/ring";
+import { emacs } from "../emacs";
+import { IRepeat, ICmdConfig } from "../global";
 import { runNativeCommand } from "../runner";
-import { registerGlobalCommand, RepeatableCommand } from "./base";
+import { registerGlobalCommand, RepeatableCommand } from "../cmd_base";
 import * as logic from "./logichelper";
 import _ = require("lodash");
-import { IRepeat } from "../global";
-import { getRepeatNum } from "../configure";
 
 
 
@@ -14,7 +15,14 @@ export function active() {
 }
 
 class EditCommand extends RepeatableCommand {
-    change = true;
+
+    public constructor(config: ICmdConfig) {
+        super({
+            name: config.name,
+            modify: config.modify === undefined ? true : config.modify,
+            trace: config.trace
+        });
+    }
 
     protected editor: TextEditor | undefined;
     protected doc: TextDocument | undefined;
@@ -106,7 +114,11 @@ class EditCommand extends RepeatableCommand {
 
 @registerGlobalCommand
 class DeleteChar extends EditCommand {
-    name = "C-d";
+    public constructor() {
+        super({
+            name: 'C-d'
+        });
+    }
     public async editRun() {
         let endPos = logic.getNextByNum(this.doc!, this.pos, this.repeatNum);
         await this.delete(new Range(this.pos, endPos), false);
@@ -115,7 +127,12 @@ class DeleteChar extends EditCommand {
 
 @registerGlobalCommand
 class KillLine extends EditCommand {
-    name = "C-k";
+    public constructor() {
+        super({
+            name: 'C-k'
+        });
+    }
+
     public async editRun() {
         let l = this.doc!.lineAt(this.pos.line).text.length;
         // last pos
@@ -146,7 +163,12 @@ class KillLine extends EditCommand {
 
 @registerGlobalCommand
 class KillRegion extends EditCommand {
-    name = "C-w";
+    public constructor() {
+        super({
+            name: 'C-w'
+        });
+    }
+
     public async editRun() {
         await this.runHelper();
     }
@@ -165,7 +187,12 @@ class KillRegion extends EditCommand {
 
 @registerGlobalCommand
 class KillRingSave extends EditCommand {
-    name = "M-w";
+    public constructor() {
+        super({
+            name: 'M-w'
+        });
+    }
+
     public async editRun() {
         // run native copy command
         await runNativeCommand('editor.action.clipboardCopyAction');
@@ -182,7 +209,12 @@ class KillRingSave extends EditCommand {
 // TODO handle C-u
 @registerGlobalCommand
 class Yank extends EditCommand {
-    name = "C-y";
+    public constructor() {
+        super({
+            name: 'C-y'
+        });
+    }
+
     public async editRun() {
         let text = emacs.killRing.back();
         if (text) {
@@ -198,7 +230,11 @@ class Yank extends EditCommand {
 // handle C-u
 @registerGlobalCommand
 class YankPop extends EditCommand {
-    name = "M-y";
+    public constructor() {
+        super({
+            name: 'M-y'
+        });
+    }
 
     private async replaceYank() {
         let text = emacs.killRing.rolling();
@@ -225,10 +261,10 @@ class YankPop extends EditCommand {
             // roll to pass the back string.
             emacs.killRing.rolling();
             await this.replaceYank();
-            this._trace = true;
+            this.trace = true;
             this.stayActive = true;
         } else {
-            this._trace = false;
+            this.trace = false;
             emacs.updateStatusBar('Previous commond was not a yank');
         }
     }
@@ -251,7 +287,12 @@ class YankPop extends EditCommand {
 
 @registerGlobalCommand
 class KillWord extends EditCommand {
-    name = "M-d";
+    public constructor() {
+        super({
+            name: 'M-d'
+        });
+    }
+
     public async editRun() {
         let endPos = this.pos;
         for (let i = 0; i < this.repeatNum; ++i) {
@@ -270,7 +311,12 @@ class KillWord extends EditCommand {
 
 @registerGlobalCommand
 class BackwardKillWord extends EditCommand {
-    name = "M-del";
+    public constructor() {
+        super({
+            name: 'M-del'
+        });
+    }
+
     public async editRun() {
         let endPos = this.pos;
         for (let i = 0; i < this.repeatNum; ++i) {
@@ -289,7 +335,12 @@ class BackwardKillWord extends EditCommand {
 
 @registerGlobalCommand
 class NewLineMayBeIndent extends EditCommand {
-    name = "C-j";
+    public constructor() {
+        super({
+            name: 'C-j'
+        });
+    }
+
     public async editRun() {
         await runNativeCommand('C-e');
         await runNativeCommand('default:type', {
@@ -300,7 +351,12 @@ class NewLineMayBeIndent extends EditCommand {
 
 @registerGlobalCommand
 class NewLine extends EditCommand {
-    name = 'C-m';
+    public constructor() {
+        super({
+            name: 'C-m'
+        });
+    }
+
     public async editRun() {
         await runNativeCommand('default:type', {
             text: '\n'.repeat(this.repeatNum)
@@ -310,7 +366,12 @@ class NewLine extends EditCommand {
 
 @registerGlobalCommand
 class IndentNewCommentLine extends EditCommand {
-    name = 'M-j';
+    public constructor() {
+        super({
+            name: 'M-j'
+        });
+    }
+
     public async editRun() {
         runNativeCommand('default:type', {
             text: '\n'
@@ -323,7 +384,12 @@ class IndentNewCommentLine extends EditCommand {
 // FIXME ? C-o blink with sync...
 @registerGlobalCommand
 class OpenLine extends EditCommand {
-    name = "C-o";
+    public constructor() {
+        super({
+            name: 'C-o'
+        });
+    }
+
     public async editRun() {
         await this.insert(this.pos, '\n'.repeat(this.repeatNum));
         emacs.setCurrentPosition(this.pos);
@@ -332,7 +398,12 @@ class OpenLine extends EditCommand {
 
 @registerGlobalCommand
 class DeleteBlankLines extends EditCommand {
-    name = "C-x C-o";
+    public constructor() {
+        super({
+            name: 'C-x C-o'
+        });
+    }
+
     public async editRun() {
         let doc = this.doc!;
         let pos = this.pos;
@@ -381,7 +452,12 @@ class DeleteBlankLines extends EditCommand {
 
 @registerGlobalCommand
 class DeleteHorizontalSpace extends EditCommand {
-    name = 'M-\\';
+    public constructor() {
+        super({
+            name: 'M-\\'
+        });
+    }
+
     public async editRun() {
         let doc = this.doc!;
         let pos = this.pos;
@@ -403,10 +479,16 @@ class DeleteHorizontalSpace extends EditCommand {
 }
 
 
-@registerGlobalCommand
-class KillRectangle extends EditCommand {
-    name = "C-x r k";
-    del = true;
+class KillRectangleB extends EditCommand {
+    protected del: boolean;
+
+    public constructor(config: ICmdConfig) {
+        super({
+            name: config.name
+        });
+        this.del = true;
+    }
+
     public async editRun() {
         let doc = this.doc!;
         let pos = this.pos;
@@ -442,16 +524,36 @@ class KillRectangle extends EditCommand {
         }
     }
 }
+@registerGlobalCommand
+class KillRectangle extends KillRectangleB {
+    public constructor() {
+        super({
+            name: 'C-x r k'
+        });
+
+        this.del = true;
+    }
+}
 
 @registerGlobalCommand
-class CopyRectangleAsKill extends KillRectangle {
-    name = 'C-x r w';
-    del = false;
+class CopyRectangleAsKill extends KillRectangleB {
+    public constructor() {
+        super({
+            name: 'C-x r w'
+        });
+
+        this.del = false;
+    }
 }
 
 @registerGlobalCommand
 class YankRectangle extends EditCommand {
-    name = 'C-x r y';
+    public constructor() {
+        super({
+            name: 'C-x r y'
+        });
+    }
+
     public async editRun() {
         await this.yank(this.doc!, this.pos);
     }
@@ -500,9 +602,15 @@ class YankRectangle extends EditCommand {
 
 @registerGlobalCommand
 class ZapToChar extends EditCommand {
-    name = 'M-z';
+    private _s: string;
 
-    private _s: string = '';
+    public constructor() {
+        super({
+            name: 'M-z'
+        });
+
+        this._s = '';
+    }
 
     public async editRun() {
         emacs.updateStatusBar('Zap to char: ');

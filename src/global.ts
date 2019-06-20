@@ -11,12 +11,12 @@ export interface IRepeat {
     repeatByNumber: boolean;
 }
 
-// repeat type
-export enum RepeatType {
-    // repeat active command, ineffeciently
-    Loop,
-    // repeat as argument run(arg)
-    Accept,
-    // not support repeat
-    Reject,
+// command initial config
+export interface ICmdConfig {
+    // command key binding
+    name: string;
+    // if emacs trace this command, default `true`.
+    trace?: boolean;
+    // if this command modify text. default `false`
+    modify?: boolean;
 }

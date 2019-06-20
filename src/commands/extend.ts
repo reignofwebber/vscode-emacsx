@@ -1,9 +1,5 @@
-import {TextDocument, Position, TextEditor, Range, DocumentHighlight, Selection} from "vscode";
-import { emacs } from "../state";
 import { runNativeCommand } from "../runner";
-import { registerGlobalCommand, Command } from "./base";
-import * as logic from "./logichelper";
-import { start } from "repl";
+import { Command, registerGlobalCommand } from "../cmd_base";
 
 
 export function active(extensionPath: string) {
@@ -13,7 +9,12 @@ export function active(extensionPath: string) {
 
 @registerGlobalCommand
 class CodeQuickOpen extends Command {
-    name = 'C-x C-f';
+    public constructor() {
+        super({
+            name: 'C-x C-f'
+        });
+    }
+
     public async run() {
         runNativeCommand('workbench.action.quickOpen');
     }
@@ -21,7 +22,12 @@ class CodeQuickOpen extends Command {
 
 @registerGlobalCommand
 class CodeSplitEditorOrthogonal extends Command {
-    name = 'C-x 2';
+    public constructor() {
+        super({
+            name: 'C-x 2'
+        });
+    }
+
     public async run() {
         runNativeCommand('workbench.action.splitEditorOrthogonal');
     }
@@ -29,7 +35,12 @@ class CodeSplitEditorOrthogonal extends Command {
 
 @registerGlobalCommand
 class CodeSplitEditor extends Command {
-    name = 'C-x 3';
+    public constructor() {
+        super({
+            name: 'C-x 3'
+        });
+    }
+
     public async run() {
         runNativeCommand('workbench.action.splitEditor');
     }
@@ -37,7 +48,12 @@ class CodeSplitEditor extends Command {
 
 @registerGlobalCommand
 class CodeToggleEditorGroupLayout extends Command {
-    name = 'C-x 4';
+    public constructor() {
+        super({
+            name: 'C-x 4'
+        });
+    }
+
     public async run() {
         runNativeCommand('workbench.action.toggleEditorGroupLayout');
     }
@@ -45,7 +61,12 @@ class CodeToggleEditorGroupLayout extends Command {
 
 @registerGlobalCommand
 class CodeFocusNextEditorGroup extends Command {
-    name = 'C-x o';
+    public constructor() {
+        super({
+            name: 'C-x o'
+        });
+    }
+
     public async run() {
         runNativeCommand('workbench.action.focusNextGroup');
     }

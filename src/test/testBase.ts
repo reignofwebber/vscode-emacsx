@@ -1,8 +1,8 @@
+import * as assert from 'assert';
+import { writeFileSync } from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import * as assert from 'assert';
-import { emacs } from "../state";
-import { writeFileSync } from "fs";
+import { emacs } from "../emacs";
 
 
 export interface IContent {

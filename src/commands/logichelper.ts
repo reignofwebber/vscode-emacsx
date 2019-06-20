@@ -1,4 +1,4 @@
-import {TextDocument, Position} from "vscode";
+import { Position, TextDocument } from "vscode";
 import { wordSeparators } from "../configure";
 import _ = require("lodash");
 

@@ -1,15 +1,14 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { emacs } from './state';
-
-// active commands
-import * as motions from "./commands/motions";
-import * as mark from "./commands/mark";
-import * as edit from "./commands/edit";
 import * as control from "./commands/control";
-import * as file from "./commands/file";
+import * as edit from "./commands/edit";
 import * as extend from "./commands/extend";
+import * as file from "./commands/file";
+import * as mark from "./commands/mark";
+import * as motions from "./commands/motions";
+import { emacs } from './emacs';
+
 
 
 

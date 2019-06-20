@@ -1,5 +1,7 @@
 # Emacs<>Vscode
 
+[![Build status](https://ci.appveyor.com/api/projects/status/q2a54ssywkguxqc1?svg=true)](https://ci.appveyor.com/project/reignofwebber/vscode-emacsx)
+
 ## Emacs Keymap
 
 ### Motion

@@ -449,7 +449,7 @@
 		"test": "npm run compile && node ./node_modules/vscode/bin/test"
 	},
 	"dependencies": {
-		"lodash": "^4.17.11"
+		"lodash": "^4.17.13"
 	},
 	"devDependencies": {
 		"typescript": "^3.3.1",
